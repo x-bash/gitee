@@ -1,0 +1,3 @@
+# All Function into one function
+
+## Consider using the ...

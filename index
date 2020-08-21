@@ -21,34 +21,42 @@ open_browser(){
     fi
 }
 
-
-# TODO: create a repo named gitee-cli
-# TODO: create a repo named gitlab-cli
-# TODO: create a repo named github-cli
-
 # Introducing context
 gt.make(){
-    local O="_x_cmd_x_bash_gitee_${1:?Provide client name by O environment}"
+    local O_ORIGINAL=${1:?Provide client name by O environment}
+
+    if [ "$O_ORIGINAL" = "GITEE_DEFAULT" ]; then
+        echo "Name 'GITEE_DEFAULT' is reserved for internal use."
+        return 1
+    fi
+
+    local O="_x_cmd_x_bash_gitee_$O_ORIGINAL"
 
     http.make "$O" 'https://gitee.com/api'
     http.header.content-type.eq.json+utf8
     # http.header.add 'Content-Type' 'application/json;charset=UTF-8'
 
-    # TODO: auto load gitee token from local file. ~/.x-cmd.com/x-bash/gitee/TOKEN/default
-
+    local DEFAULT_TOKEN_PATH="$HOME/.x-cmd.com/x-bash/gitee/TOKEN/default"
+    if [ -f "$DEFAULT_TOKEN_PATH" ]; then
+        O=$O_ORIGINAL gitee.token.set $(cat "$DEFAULT_TOKEN_PATH")
+    fi
 }
+
+if [ -z "$DO_NOT_INIT_GITEE_DEFAULT" ]; then
+    gt.make "GITEE_DEFAULT"
+fi
 
 gt.new(){
     oo.create_new_function gt "$@"
 }
 
 gt.resp.header(){
-    O="_x_cmd_x_bash_gitee_${O:?Provide client name by O environment}" http.resp.header "$@"
+    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.resp.header "$@"
 }
 
-gt.get(){ O="_x_cmd_x_bash_gitee_${O:?Provide client name by O environment}" http.get "$@";  }
+gt.get(){ O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.get "$@";  }
 gt.get.multi(){
-    # local O="_x_cmd_x_bash_gitee_${O:?Provide client name by O environment}"
+    # local O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}"
 
     # local first=() second="" flag=0
     # for i in "$@"; do
@@ -78,24 +86,24 @@ gt.get.multi(){
     done
 }
 
-gt.post(){ O="_x_cmd_x_bash_gitee_${O:?Provide client name by O environment}" http.post "$@"; }
-gt.post.json(){ O="_x_cmd_x_bash_gitee_${O:?Provide client name by O environment}" http.post.json "$@"; }
+gt.post(){ O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.post "$@"; }
+gt.post.json(){ O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.post.json "$@"; }
 
-gt.put(){ O="_x_cmd_x_bash_gitee_${O:?Provide client name by O environment}" http.put "$@"; }
-gt.put.json(){ O="_x_cmd_x_bash_gitee_${O:?Provide client name by O environment}" http.put.json "$@"; }
+gt.put(){ O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.put "$@"; }
+gt.put.json(){ O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.put.json "$@"; }
 
-gt.delete(){ O="_x_cmd_x_bash_gitee_${O:?Provide client name by O environment}" http.delete "$@"; }
+gt.delete(){ O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.delete "$@"; }
 
 gt.dict.getput(){
-    O="_x_cmd_x_bash_gitee_${O:?Provide client name by O environment}" http.dict.getput "$@";
+    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.dict.getput "$@";
 }
 
 gt.dict.get(){
-    O="_x_cmd_x_bash_gitee_${O:?Provide client name by O environment}" http.dict.get "$@";
+    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.dict.get "$@";
 }
 
 gt.dict.put(){
-    O="_x_cmd_x_bash_gitee_${O:?Provide client name by O environment}" http.dict.put "$@";
+    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.dict.put "$@";
 }
 
 
@@ -110,7 +118,7 @@ gt.dict.put(){
 ###########
 
 gt.token.set(){
-    local O="${O:?Provide client name by O environment}"
+    local O="${O:-GITEE_DEFAULT}"
     local GITEE_TOKEN=${1:?"Please provide gitee token"}
 
     gt.dict.put "access_token" "$GITEE_TOKEN"
@@ -126,8 +134,17 @@ gt.token.get(){
     gt.dict.get "access_token"
 }
 
+gt.token.dump(){
+    local current_token="${1:-$(gt.token.get)}" # check GITEE_TOKEN ?
+    local name=${2:-"default"}
+    
+    local TOKEN_PATH="$HOME/.x-cmd.com/x-bash/gitee/TOKEN/$name"
+    echo "dumping token to $name. Filepath is: $TOKEN_PATH" >&2
+    echo "$current_token" >"$TOKEN_PATH"
+}
+
 # gt.owner.set(){
-#     local O="_x_cmd_x_bash_gitee_${O:?Provide client name by O environment}"
+#     local O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}"
 
 #     local owner="$1"
 
@@ -156,7 +173,7 @@ gt.token.get(){
 # }
 
 gt.parse_owner_repo(){
-    local O="${O:?Provide client name by O environment}"
+    local O="${O:-GITEE_DEFAULT}"
 
     if [ -z "$repo" ]; then
         repo="$(gt.current-repo.get)"
@@ -174,7 +191,7 @@ gt.parse_owner_repo(){
 
 # TODO: review
 gt.parse_env_owner_type(){
-    local O=${O:?Provide client name by O environment}
+    local O=${O:-GITEE_DEFAULT}
 
     if [ -z "$owner" ]; then
         owner=$(gt.dict.getput "current-owner")
@@ -189,7 +206,7 @@ gt.parse_env_owner_type(){
 
 # TODO: review
 gt.parse_env_owner_repo_type(){
-    local O="${O:?Provide client name by O environment}"
+    local O="${O:-GITEE_DEFAULT}"
 
     gt.parse_owner_repo
     if [ -z "$owner" ]; then
@@ -207,12 +224,12 @@ gt.parse_env_owner_repo_type(){
 
 # shellcheck disable=SC2120
 gt.current-repo.set(){
-    local O="${O:?Provide client name by O environment}"
+    local O="${O:-GITEE_DEFAULT}"
 
     local repo="$1" owner=""
 
     gt.parse_owner_repo
-    O="_x_cmd_x_bash_gitee_${O:?Provide client name by O environment}" gt.dict.getput "current-repo" "$1";
+    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" gt.dict.getput "current-repo" "$1";
 
     [ -n "$owner" ] && {
         echo "changing owner: $owner" >&2
@@ -227,7 +244,7 @@ gt.current-repo.get(){
 }
 
 gt.current-owner.set(){ 
-    local O="_x_cmd_x_bash_gitee_${O:?Provide client name by O environment}"
+    local O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}"
 
     param '
         owner "Provide owner name"
