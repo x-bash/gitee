@@ -1,7 +1,5 @@
 # shellcheck shell=bash
 
-# TODO: Add --dry-run
-
 @src std/http std/param
 
 # Without Context, gt and http share same name
@@ -35,6 +33,9 @@ gt.make(){
     http.make "$O" 'https://gitee.com/api'
     http.header.content-type.eq.json+utf8
     # http.header.add 'Content-Type' 'application/json;charset=UTF-8'
+
+    # TODO: auto load gitee token from local file. ~/.x-cmd.com/x-bash/gitee/TOKEN/default
+
 }
 
 gt.new(){
