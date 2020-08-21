@@ -4,7 +4,6 @@ gt.new a
 
 echo "setting token"
 
-a.token.set 93642d8d4d8a4646aa94ef6bf6322720
 echo "$(a.token.get)"
 
 # a.user.info
