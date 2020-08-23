@@ -2,8 +2,6 @@
 
 @src std/http std/param
 
-# Without Context, gt and http share same name
-
 # Introducing context
 gt.make(){
     local O_ORIGINAL=${1:?Provide client name by O environment}
@@ -17,7 +15,6 @@ gt.make(){
 
     http.make "$O" 'https://gitee.com/api'
     http.header.content-type.eq.json+utf8
-    # http.header.add 'Content-Type' 'application/json;charset=UTF-8'
 
     local DEFAULT_TOKEN_PATH="$HOME/.x-cmd.com/x-bash/gitee/TOKEN/default"
     if [ -f "$DEFAULT_TOKEN_PATH" ]; then
@@ -347,9 +344,10 @@ gt.repo.url(){
 }
 
 gt.repo.url.ssh(){
+    # TODO: bug repo could be ""
     param '
         owner="" "Provide owner"
-        repo "provide repo"
+        repo="" "provide repo"
     '
 
     [ $# -ne 0 ] && repo="$1"
@@ -358,8 +356,8 @@ gt.repo.url.ssh(){
 }
 
 gt.repo.clone(){
-    gt.repo.clone.ssh && return 0
-    gt.repo.clone.https && return 0
+    gt.repo.clone.ssh "$@" && return 0
+    gt.repo.clone.https "$@" && return 0
     return $?
 }
 
@@ -377,7 +375,7 @@ gt.repo.clone.https(){
 gt.repo.fork(){
     param '
         owner="" "Repo Owner"
-        repo "Repo name"
+        repo="" "Repo name"
         organization="" "Provide organization"
     '
 
@@ -550,7 +548,7 @@ gt.repo.member.add(){
 
     param '
         owner "repo owner"
-        repo "repo name"
+        repo="" "Repo name"
         permission=pull "Repo permission" = push push admin
     '
 
@@ -583,7 +581,7 @@ A
 gt.repo.member.remove(){
     param '
         owner="" "Repo Owner"
-        repo "Repo name"
+        repo="" "Repo name"
     '
     gt.parse_owner_repo
 
@@ -604,7 +602,7 @@ gt.repo.info(){
 gt.repo.release.list(){
     param '
         owner="" "Repo Owner"
-        repo "Repo name"
+        repo="" "Repo name"
     '
     gt.parse_owner_repo
 }
@@ -613,7 +611,7 @@ gt.repo.release.list(){
 gt.repo.release.create(){
     param '
         owner="" "Repo Owner"
-        repo "Repo name"
+        repo="" "Repo name"
     '
     gt.parse_owner_repo
 }
@@ -622,7 +620,7 @@ gt.repo.release.create(){
 gt.repo.release.update(){
     param '
         owner="" "Repo Owner"
-        repo "Repo name"
+        repo="" "Repo name"
     '
     gt.parse_owner_repo
 }
@@ -630,7 +628,7 @@ gt.repo.release.update(){
 gt.repo.release.get_or_create(){
     param '
         owner="" "Repo Owner"
-        repo "Repo name"
+        repo="" "Repo name"
     '
     gt.parse_owner_repo
 }
@@ -639,7 +637,7 @@ gt.repo.release.get_or_create(){
 gt.repo.release.delete(){
     param '
         owner="" "Repo Owner"
-        repo "Repo name"
+        repo="" "Repo name"
     '
     gt.parse_owner_repo
 }
@@ -647,7 +645,7 @@ gt.repo.release.delete(){
 gt.repo.release.attachment(){
     param '
         owner="" "Repo Owner"
-        repo "Repo name"
+        repo="" "Repo name"
     '
     gt.parse_owner_repo
 }
@@ -655,7 +653,7 @@ gt.repo.release.attachment(){
 gt.repo.release.attachment.list(){
     param '
         owner="" "Repo Owner"
-        repo "Repo name"
+        repo="" "Repo name"
     '
     gt.parse_owner_repo
 }
@@ -664,7 +662,7 @@ gt.repo.release.attachment.list(){
 gt.repo.release.attachment.upload(){
     param '
         owner="" "Repo Owner"
-        repo "Repo name"
+        repo="" "Repo name"
     '
     gt.parse_owner_repo
 }
@@ -673,7 +671,7 @@ gt.repo.release.attachment.upload(){
 gt.repo.release.attachment.remove(){
     param '
         owner="" "Repo Owner"
-        repo "Repo name"
+        repo="" "Repo name"
     '
     gt.parse_owner_repo
 }
@@ -683,7 +681,7 @@ gt.repo.release.attachment.remove(){
 gt.repo.pr.create(){
     param '
         owner="" "Repo Owner"
-        repo "Repo name"
+        repo="" "Repo name"
         title "pr title"
         head "source branch. Format: [username:]<branch>"
         base "target branch. Format: [username:]<branch>"
@@ -701,7 +699,7 @@ gt.repo.pr.create(){
 gt.repo.pr.assign(){
     param '
         owner="" "Repo Owner"
-        repo "Repo name"
+        repo="" "Repo name"
         number "pull request id"
         labels=""
         assignees="" "reviewer username list. Format: <username>[,<username>]"
@@ -715,7 +713,7 @@ gt.repo.pr.assign(){
 gt.repo.pr.assign.testers(){
     param '
         owner "Repo Owner"
-        repo "Repo name"
+        repo="" "Repo name"
         number "pull request id"
         labels=""
         testers="" "testers username list. Format: <username>[,<username>]"
@@ -729,7 +727,7 @@ gt.repo.pr.assign.testers(){
 gt.repo.pr.list(){
     param '
         owner "Repo Owner"
-        repo "Repo name"
+        repo="" "Repo name"
         state=open = open closed merged all
     '
 
@@ -741,7 +739,7 @@ gt.repo.pr.list(){
 gt.repo.pr.open(){
     param '
         owner="" "Repo Owner"
-        repo "Repo name"
+        repo="" "Repo name"
     '
     gt.parse_owner_repo
 }
@@ -755,7 +753,7 @@ gt.repo.pr.status(){
 gt.repo.pr.review-status.reset(){
     param '
         owner="" "Repo Owner"
-        repo "Repo name"
+        repo="" "Repo name"
     '
     gt.parse_owner_repo
 }
@@ -764,7 +762,7 @@ gt.repo.pr.review-status.reset(){
 gt.repo.pr.test-status.reset(){
     param '
         owner="" "Repo Owner"
-        repo "Repo name"
+        repo="" "Repo name"
     '
     gt.parse_owner_repo
 }
@@ -774,7 +772,7 @@ gt.repo.pr.test-status.reset(){
 gt.repo.pr.view(){
     param '
         owner="" "Repo Owner"
-        repo "Repo name"
+        repo="" "Repo name"
         id  "pull request id"
     '
     gt.parse_owner_repo
@@ -784,7 +782,7 @@ gt.repo.pr.view(){
 gt.repo.pr.checkout.http(){
     param '
         owner="" "Repo Owner"
-        repo "Repo name"
+        repo="" "Repo name"
     '
     gt.parse_owner_repo
 }
@@ -812,7 +810,7 @@ gt.repo.pr.merge.http(){
 gt.repo.pr.issue.list(){
     param '
         owner="" "Repo Owner"
-        repo "Repo name"
+        repo="" "Repo name"
     '
     gt.parse_owner_repo
 }
@@ -824,7 +822,33 @@ gt.repo.pr.comment.list(){
 
     param '
         owner="" "Repo Owner"
-        repo "Repo name"
+        repo="" "Repo name"
     '
     gt.parse_owner_repo
+}
+
+# shellcheck disable=SC2142
+alias gt.repo.read.args='
+    param '\''
+        owner="" "Repo Owner"
+        repo="" "Repo name"
+    '\''
+    repo="${1:-$repo}"
+    if ! gt.parse_owner_repo; then
+        return 1
+    fi
+'
+
+
+# https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoPages
+gt.repo.page.info(){
+    gt.repo.read.args
+    gt.get "/v5/repos/${owner}/${repo}/pages"
+    
+}
+
+# https://gitee.com/api/v5/swagger#/postV5ReposOwnerRepoPagesBuilds
+gt.repo.page.build(){
+    gt.repo.read.args
+    gt.post.json "/v5/repos/${owner}/${repo}/pages/builds"
 }
