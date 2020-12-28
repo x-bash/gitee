@@ -528,6 +528,31 @@ gt.repo.new(){
     "
 }
 
+# shellcheck disable=SC2142
+alias gt.repo.read.args='
+    param '\''
+        owner="" "Repo Owner"
+        repo="" "Repo name"
+    '\''
+    repo="${1:-$repo}"
+    if ! gt.parse_owner_repo; then
+        return 1
+    fi
+'
+
+# https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoPages
+gt.repo.page.info(){
+    gt.repo.read.args
+    gt.get "/v5/repos/${owner}/${repo}/pages"
+    
+}
+
+# https://gitee.com/api/v5/swagger#/postV5ReposOwnerRepoPagesBuilds
+gt.repo.page.build(){
+    gt.repo.read.args
+    gt.post.json "/v5/repos/${owner}/${repo}/pages/builds"
+}
+
 # https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoCollaborators
 gt.repo.member.list(){
     :
@@ -825,30 +850,4 @@ gt.repo.pr.comment.list(){
         repo="" "Repo name"
     '
     gt.parse_owner_repo
-}
-
-# shellcheck disable=SC2142
-alias gt.repo.read.args='
-    param '\''
-        owner="" "Repo Owner"
-        repo="" "Repo name"
-    '\''
-    repo="${1:-$repo}"
-    if ! gt.parse_owner_repo; then
-        return 1
-    fi
-'
-
-
-# https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoPages
-gt.repo.page.info(){
-    gt.repo.read.args
-    gt.get "/v5/repos/${owner}/${repo}/pages"
-    
-}
-
-# https://gitee.com/api/v5/swagger#/postV5ReposOwnerRepoPagesBuilds
-gt.repo.page.build(){
-    gt.repo.read.args
-    gt.post.json "/v5/repos/${owner}/${repo}/pages/builds"
 }
