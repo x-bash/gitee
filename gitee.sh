@@ -429,11 +429,13 @@ gt.repo.create(){
 # https://gitee.com/api/v5/swagger#/postV5OrgsOrgRepos
 gt.org.repo.create(){
     # TODO: I don't know what does path means for an organization repo
-    param '
+    param "
+        default-scope app/gitee/$O
+    "'
         owner   "organization name" =~ [A-Za-z][A-Za-z0-9-]+
-        path "provide path"
-        description "repo description"
-        homepage "repo home page"
+        path    "provide path"
+        description     "repo description"
+        homepage        "repo home page"
         has_issues=true     = true false
         has_wiki=true       = true false
         can_comment=true    = true false
