@@ -200,29 +200,6 @@ gt.parse_owner_repo(){
     fi
 }
 
-# shellcheck disable=SC2142,SC2154
-alias gt.param.repo.list='
-    param '\''
-        ... "Provide repo list"
-    '\''
-
-    if [ ${#_rest_argv[@]} -eq 0 ]; then
-        # Notice, $() should not quote!!!
-        _rest_argv=( "" )
-    fi
-
-    local repo_list
-    repo_list=( $(
-        for repo in "${_rest_argv[@]}"; do
-            repo="$(gt.param.normalize.repo "$repo")"
-            if [ $? -ne 0 ]; then
-                return 1
-            fi
-            printf "%s\n" "$repo"
-        done
-    ) )
-'
-
 ############################
 # Section 4: Info & Org Creation
 ############################
@@ -717,10 +694,11 @@ gt.repo.release.attachment.list(){
     param "
         default-scope app/gitee/$O
     "'
-        owner="" "Repo Owner"
-        repo="" "Repo name"
+        repo    "Repo name"
     '
-    gt.parse_owner_repo
+    
+    local owner_repo
+    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
 }
 
 # Provide multiple files
@@ -731,10 +709,11 @@ gt.repo.release.attachment.upload(){
     param "
         default-scope app/gitee/$O
     "'
-        owner="" "Repo Owner"
-        repo="" "Repo name"
+        repo    "Repo name"
     '
-    gt.parse_owner_repo
+    
+    local owner_repo
+    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
 }
 
 # Delete the file in attachment list
@@ -745,10 +724,11 @@ gt.repo.release.attachment.remove(){
     param "
         default-scope app/gitee/$O
     "'
-        owner="" "Repo Owner"
         repo="" "Repo name"
     '
-    gt.parse_owner_repo
+    
+    local owner_repo
+    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
 }
 
 
@@ -764,11 +744,10 @@ gt.repo.pr.create(){
     param "
         default-scope app/gitee/$O
     "'
-        owner="" "Repo Owner"
         repo    "Repo name"
-        title "pr title"
-        head "source branch. Format: [username:]<branch>"
-        base "target branch. Format: [username:]<branch>"
+        title   "pr title"
+        head    "source branch. Format: [username:]<branch>"
+        base    "target branch. Format: [username:]<branch>"
         body="" "pull request content"
         milestone_number="" "milestone id"
         labels="" "labels"
@@ -776,6 +755,9 @@ gt.repo.pr.create(){
         testers="" "tester username list. Format: <username>[,<username>]"
         prune_source_branch=false = true false
     '
+
+    local owner_repo
+    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
 
 }
 
@@ -787,8 +769,8 @@ gt.repo.pr.assign(){
     param "
         default-scope app/gitee/$O
     "'
-        repo "Repo name"
-        number "pull request id"
+        repo    "Repo name"
+        number  "pull request id"
         labels=""
         assignees="" "reviewer username list. Format: <username>[,<username>]"
     '
