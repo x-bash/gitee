@@ -81,6 +81,7 @@ gt.config.save(){
     param.default.save "app/gitee/$O" "${1:?$HOME/.x-cmd.com/config/x-bash/.app.gitee.config}"
 }
 
+# shellcheck disable=SC2120
 gt.config.load(){
     local O="${O:-GITEE_DEFAULT}"
     param.default.load "app/gitee/$O" "${1:?$HOME/.x-cmd.com/config/x-bash/.app.gitee.config}"
@@ -342,13 +343,14 @@ gt.repo.clone.https(){
 # https://gitee.com/api/v5/swagger#/postV5ReposOwnerRepoForks
 gt.repo.fork(){
     param '
-        owner=""   "Repo Owner" =str
         repo    "Repo name" =str
         organization=""    "Provide organization"  =str
     '
 
+    local owner_repo
+    owner_repo="$(gt.param.normalize.repo "$repo")"
     
-    gt.post.json "https://gitee.com/api/v5/repos/${owner}/${repo}/forks" organization
+    gt.post.json "https://gitee.com/api/v5/repos/${owner_repo}/forks" organization
 }
 
 
