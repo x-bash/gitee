@@ -14,15 +14,11 @@ xrc std/http std/param
 ############################
 # Section 1: Token & Config management
 ############################
+
+# shellcheck disable=SC2120
 gt.token(){
     local O="${O:-GITEE_DEFAULT}"
     param.default "app/gitee/$O" "token" "$@"
-
-    if [ -n "$1" ]; then    # token set
-        O="_x_cmd_x_bash_gitee_$O"
-        http.body.put access_token "$1"
-        http.qs.put access_token "$1"
-    fi
 }
 
 # Current Repo
@@ -86,11 +82,8 @@ gt.config.save(){
 }
 
 gt.config.load(){
-    local O="${O:-GITEE_DEFAULT}" token
+    local O="${O:-GITEE_DEFAULT}"
     param.default.load "app/gitee/$O" "${1:?$HOME/.x-cmd.com/config/x-bash/.app.gitee.config}"
-
-    token="$(gt.token)"
-    [ -n "$token" ] && gt.token "$token"
 }
 
 ############################
@@ -105,9 +98,10 @@ gt.resp.body(){
     O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.resp.body "$@"
 }
 
-gt.get()(
+gt.get()(   # Using subshell
+    local O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}"
     http.qs.put access_token "$(gt.token)"
-    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.get "$@";
+    http.get "$@";
 )
 
 gt.get.multi(){
@@ -121,20 +115,23 @@ gt.get.multi(){
 }
 
 # gt.post(){ O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.post "$@"; }
-gt.post.json()(
+gt.post.json()( # Using subshell
+    local O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}"
     http.body.put access_token "$(gt.token)"
-    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.post.json "$@"; 
+    http.post.json "$@"; 
 )
 
 # gt.put(){ O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.put "$@"; }
-gt.put.json()(
+gt.put.json()(  # Using subshell
+    local O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}"
     http.body.put access_token "$(gt.token)"
-    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.put.json "$@"; 
+    http.put.json "$@"; 
 )
 
-gt.delete()(
+gt.delete()(    # Using subshell
+    local O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}"
     http.qs.put access_token "$(gt.token)"
-    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.delete "$@";
+    http.delete "$@";
 )
 
 gt.dict.getput(){
@@ -1006,4 +1003,5 @@ gt.make(){
 
 if [ -z "$DO_NOT_INIT_GITEE_DEFAULT" ]; then
     gt.make "GITEE_DEFAULT"
+    gt.config.load
 fi
