@@ -19,6 +19,14 @@ xrc std/http std/param
 gt.token(){
     local O="${O:-GITEE_DEFAULT}"
     param.default "app/gitee/$O" "token" "$@"
+
+    if [ -n "$1" ]; then
+        # setter
+        local token="$1"
+        O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}"
+        http.qs.put access_token "$token"
+        http.body.put access_token "$token"
+    fi
 }
 
 # Current Repo
@@ -61,7 +69,7 @@ gt.current_owner_type(){
     data="$(param.default "app/gitee/$O" owner_type "$1")"
 
     if [ -z "$data" ]; then
-        owner="$(gt.current-owner.get)"
+        owner="$(gt.current_owner)"
         if [ -z "$owner" ]; then
             echo "Owner is empty. While owner not set." >&2
             return 1
@@ -77,14 +85,22 @@ gt.current_owner_type(){
 
 # Current User
 
+gt.config.which(){
+    local O="${O:-GITEE_DEFAULT}"
+    echo "$HOME/.x-cmd.com/config/x-bash/app.gitee.config/$O"
+}
+
 gt.config.save(){
-    param.default.save "app/gitee/$O" "${1:?$HOME/.x-cmd.com/config/x-bash/.app.gitee.config}"
+    local O="${O:-GITEE_DEFAULT}"
+    param.default.save "app/gitee/$O" "${1:-$HOME/.x-cmd.com/config/x-bash/app.gitee.config/$O}"
 }
 
 # shellcheck disable=SC2120
 gt.config.load(){
     local O="${O:-GITEE_DEFAULT}"
-    param.default.load "app/gitee/$O" "${1:?$HOME/.x-cmd.com/config/x-bash/.app.gitee.config}"
+    param.default.load "app/gitee/$O" "${1:-$HOME/.x-cmd.com/config/x-bash/app.gitee.config/$O}"
+    token="$(param.default "app/gitee/$O" token)"
+    gt.token "$token"
 }
 
 ############################
@@ -99,41 +115,33 @@ gt.resp.body(){
     O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.resp.body "$@"
 }
 
-gt.get()(   # Using subshell
-    local O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}"
-    http.qs.put access_token "$(gt.token)"
-    http.get "$@";
-)
+gt.get(){
+    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.get "$@"
+}
 
 gt.get.multi(){
     local i=1 total_page=100000
     for (( i=1; i <= total_page; i++ )); do
-        # echo gt.get "$@" page=$i per_page=100 >&2
-        gt.get "$@" page=$i per_page=100
+        echo gt.get "$@" page=$i per_page=100 >&2
+        gt.get "$@" page="$i" per_page=100
         total_page="$(gt.resp.header "total_page")"
         # echo "total_page:$total_page" >&2
     done
 }
 
 # gt.post(){ O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.post "$@"; }
-gt.post.json()( # Using subshell
-    local O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}"
-    http.body.put access_token "$(gt.token)"
-    http.post.json "$@"; 
-)
+gt.post.json(){
+    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.post.json "$@"
+}
 
 # gt.put(){ O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.put "$@"; }
-gt.put.json()(  # Using subshell
-    local O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}"
-    http.body.put access_token "$(gt.token)"
-    http.put.json "$@"; 
-)
+gt.put.json(){
+    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.put.json "$@"
+}
 
-gt.delete()(    # Using subshell
-    local O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}"
-    http.qs.put access_token "$(gt.token)"
-    http.delete "$@";
-)
+gt.delete(){
+    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.delete "$@";
+}
 
 gt.dict.getput(){
     O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.dict.getput "$@";
@@ -156,7 +164,7 @@ gt.param.normalize.repo(){
         printf "%s" "$1";;
     "")
         local _owner _repo
-        _owner="$(gt.current-owner)"
+        _owner="$(gt.current_owner)"
         if [ -z "$_owner" ]; then
             printf "No owner provided. Default owner NOT set.\n" >&2
             return 1
@@ -171,7 +179,7 @@ gt.param.normalize.repo(){
         printf "%s/%s" "$_owner" "$_repo";;
     *)     
         local _owner
-        _owner="$(gt.current-owner)"
+        _owner="$(gt.current_owner)"
         if [ -z "$_owner" ]; then
             printf "No owner provided. Default owner not set.\n" >&2
         fi
@@ -432,17 +440,17 @@ gt.org.repo.create(){
     param "
         default-scope app/gitee/$O
     "'
-        owner   "organization name" =~ [A-Za-z][A-Za-z0-9-]+
-        path    "provide path"
-        description     "repo description"
-        homepage        "repo home page"
+        owner=""   "organization name" =~ [A-Za-z][A-Za-z0-9-]+
+        path=""    "provide path"
+        description=""     "repo description"
+        homepage=""        "repo home page"
         has_issues=true     = true false
         has_wiki=true       = true false
         can_comment=true    = true false
         access=private      = public private innerSource
         auto_init=false     = true false
-        gitignore_template
-        license_template
+        gitignore_template=""
+        license_template=""
         ...     "repo list to create" =str
     '
 
@@ -982,30 +990,28 @@ gt.enterprise.new(){
 gt.make(){
     local O_ORIGINAL=${1:?Provide client name by O environment}
 
-    if [ -n "$GITEE_DEFAULT" ] && [ "$O_ORIGINAL" = "GITEE_DEFAULT" ]; then
-        echo "Name 'GITEE_DEFAULT' is reserved for internal use."
-        return 1
-    fi
+    # if [ -n "$GITEE_DEFAULT" ] && [ "$O_ORIGINAL" = "GITEE_DEFAULT" ]; then
+    #     echo "Name 'GITEE_DEFAULT' is reserved for internal use."
+    #     return 1
+    # fi
 
     local O="_x_cmd_x_bash_gitee_$O_ORIGINAL"
 
     http.make "$O" 'https://gitee.com/api'
     http.header.content-type.eq.json+utf8
 
-    local TOKEN=${2:-""}
-    if [ -n "$TOKEN" ]; then
-        printf "Init token by second parameter \n" >&2
-        O=$O_ORIGINAL gt.token.set "$TOKEN"
-    elif [ -n "$GITEE_TOKEN" ]; then
-        printf "Init token with env GITEE_TOKEN\n" >&2
-        O=$O_ORIGINAL gt.token.set "$GITEE_TOKEN"
-    else
-        gt.token.load default
-    fi
+    O="$O_ORIGINAL" gt.config.load
+
+    # local TOKEN=${2:-""}
+    # if [ -n "$GITEE_TOKEN" ]; then
+    #     printf "Init token with env GITEE_TOKEN\n" >&2
+    #     O=$O_ORIGINAL gt.token.set "$GITEE_TOKEN"
+    # else
+    #     gt.config.load default
+    # fi
 }
 
 
 if [ -z "$DO_NOT_INIT_GITEE_DEFAULT" ]; then
     gt.make "GITEE_DEFAULT"
-    gt.config.load
 fi
