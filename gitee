@@ -51,6 +51,12 @@ gt.current_owner(){
     fi
 
     # get owner type
+    local owner
+    if owner="$(param.default "app/gitee/$O" owner)"; then
+        echo "$owner"
+        return 0
+    fi
+
     data="$(gt.user.info | jq -r .login)"
     [ -z "$data" ] && return 1
     param.default "app/gitee/$O" owner "$data"
@@ -92,13 +98,17 @@ gt.config.which(){
 
 gt.config.save(){
     local O="${O:-GITEE_DEFAULT}"
-    param.default.save "app/gitee/$O" "${1:-$HOME/.x-cmd.com/config/x-bash/app.gitee.config/$O}"
+    local path="${1:-$HOME/.x-cmd.com/config/x-bash/app.gitee.config/$O}"
+    param.default.save "app/gitee/$O" "$path"
+    echo "Config $O saved in path: $path" >&2
 }
 
 # shellcheck disable=SC2120
 gt.config.load(){
     local O="${O:-GITEE_DEFAULT}"
-    param.default.load "app/gitee/$O" "${1:-$HOME/.x-cmd.com/config/x-bash/app.gitee.config/$O}"
+    local path="${1:-$HOME/.x-cmd.com/config/x-bash/app.gitee.config/$O}"
+    param.default.load "app/gitee/$O" "$path"
+    echo "Config $O load from path: $path" >&2
     token="$(param.default "app/gitee/$O" token)"
     gt.token "$token"
 }
@@ -122,7 +132,6 @@ gt.get(){
 gt.get.multi(){
     local i=1 total_page=100000
     for (( i=1; i <= total_page; i++ )); do
-        echo gt.get "$@" page=$i per_page=100 >&2
         gt.get "$@" page="$i" per_page=100
         total_page="$(gt.resp.header "total_page")"
         # echo "total_page:$total_page" >&2
@@ -170,7 +179,7 @@ gt.param.normalize.repo(){
             return 1
         fi
 
-        _repo="$(gt.current-repo)"
+        _repo="$(gt.current_repo)"
         if [ -z "$_repo" ]; then
             printf "No repo provided. Default repo NOT set.\n" >&2
             return 1
@@ -332,6 +341,13 @@ gt.repo.url.ssh(){
     done
 }
 
+gt_.repo.url.ssh(){
+    local repo
+    for repo in "$@"; do
+        printf "git@gitee.com:%s.git\n" "$(gt.param.normalize.repo "$repo")"
+    done
+}
+
 gt.repo.clone(){
     gt.repo.clone.ssh "$@" && return 0
     gt.repo.clone.https "$@" && return 0
@@ -440,7 +456,6 @@ gt.org.repo.create(){
     param "
         default-scope app/gitee/$O
     "'
-        owner=""   "organization name" =~ [A-Za-z][A-Za-z0-9-]+
         path=""    "provide path"
         description=""     "repo description"
         homepage=""        "repo home page"
@@ -461,8 +476,12 @@ gt.org.repo.create(){
         innerSource) public=2;;
     esac
 
-    local name
+    local name owner
     for name in "${_rest_argv[@]}"; do
+        name="$(gt.param.normalize.repo "$name")"
+        owner="$(echo "$name" | cut -d / -f 1)"
+        name="$(echo "$name" | cut -d / -f 2)"
+
         local resp
         {
             gt.post.json "/v5/orgs/$owner/repos" \
@@ -498,6 +517,7 @@ gt.enterprise.repo.create(){
         innerSource) private=2;;
     esac
 
+    # TODO
     local name
     for name in "${_rest_argv[@]}"; do
         gt.post.json "/v5/enterprises/$owner/repos" name has_issues has_wiki private
@@ -1001,13 +1021,13 @@ gt.make(){
     http.header.content-type.eq.json+utf8
 
     O="$O_ORIGINAL" gt.config.load
+    O="$O_ORIGINAL" gt.current_owner >/dev/null
 
     # local TOKEN=${2:-""}
     # if [ -n "$GITEE_TOKEN" ]; then
     #     printf "Init token with env GITEE_TOKEN\n" >&2
     #     O=$O_ORIGINAL gt.token.set "$GITEE_TOKEN"
-    # else
-    #     gt.config.load default
+    # else    #     gt.config.load default
     # fi
 }
 

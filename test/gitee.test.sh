@@ -1,4 +1,4 @@
-. gitee.sh
+. gitee
 
 shopt -s expand_aliases
 
@@ -8,7 +8,7 @@ echo "set current owner"
 gt.current_owner x-bash
 
 echo "create repo"
-gt.org.repo.create --owner x-bash test123
+gt.org.repo.create x-bash/test123
 
 echo "list repo"
 gt.org.repo.list x-bash
