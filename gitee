@@ -143,6 +143,7 @@ gt.post.json(){
     O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.post.json "$@"
 }
 
+
 # gt.put(){ O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.put "$@"; }
 gt.put.json(){
     O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.put.json "$@"
@@ -200,16 +201,13 @@ gt.param.normalize.repo(){
 
 gt.parse_owner_repo(){
     local O="${O:-GITEE_DEFAULT}"
-
     if [ -z "$repo" ]; then
         repo="$(gt.current_repo)"
     fi
-
     if [[ "$repo" = */* ]]; then
         owner=${repo%%/*}
         repo=${repo##*/}
     fi
-
     if [ -z "$owner" ]; then
         owner="$(gt.current_owner)"
     fi
@@ -248,7 +246,7 @@ gt.org.create(){
     '
     local org
     for org in "${_rest_argv[@]}"; do
-        gt.post "/v5/users/organization" name="$org" org="$org"
+        gt.post.json "/v5/users/organization" name="$org" org="$org"
     done
 }
 
@@ -317,7 +315,7 @@ gt.user.repo.list(){
 ############################
 gt.repo.url.http(){
     param '
-        ... "Provide repo list"
+        ...  "Provide repo list"
     '
 
     local repo
@@ -365,6 +363,7 @@ gt.repo.clone.https(){
 }
 
 # https://gitee.com/api/v5/swagger#/postV5ReposOwnerRepoForks
+# TODO Not available Gitee return Not Found Project
 gt.repo.fork(){
     param '
         repo    "Repo name" =str
@@ -453,6 +452,7 @@ gt.repo.create(){
 # https://gitee.com/api/v5/swagger#/postV5OrgsOrgRepos
 gt.org.repo.create(){
     # TODO: I don't know what does path means for an organization repo
+    # path is null default repo name as path
     param "
         default-scope app/gitee/$O
     "'
@@ -632,7 +632,7 @@ gt.repo.release.list(){
 
     local owner_repo
     owner_repo="$(gt.param.normalize.repo "$1")"
-    gt.get.multi "https://gitee.com/api/v5/repos/${owner_repo}/releases"
+    gt.get.multi "/v5/repos/${owner_repo}/releases"
 }
 
 # https://gitee.com/api/v5/swagger#/postV5ReposOwnerRepoReleases
@@ -653,7 +653,7 @@ gt.repo.release.create(){
     local owner_repo
     owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
 
-    gt.post "https://gitee.com/api/v5/repos/$owner_repo/releases" \
+    gt.post.json "/v5/repos/$owner_repo/releases" \
         tag_name name body prerelease target_commitish
 }
 
@@ -675,11 +675,12 @@ gt.repo.release.update(){
 
     local owner_repo
     owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
-    gt.post "https://gitee.com/api/v5/repos/$owner_repo/releases" \
+    gt.post.json "/v5/repos/$owner_repo/releases" \
         id tag_name name body prerelease target_commitish
 }
 
 # ?
+# tag name
 gt.repo.release.get_or_create(){
     local O="${O:-GITEE_DEFAULT}"
 
@@ -689,6 +690,9 @@ gt.repo.release.get_or_create(){
         repo "Provide repo"
         owner="" "Repo Owner"
     '
+    # owner_repo="$(gt.param.normalize.repo "$repo")"
+    # releases=gt.get.multi "/v5/repos/${owner_repo}/releases"
+    # if [ -n $releases]; then
     gt.parse_owner_repo
 }
 
@@ -700,8 +704,11 @@ gt.repo.release.delete(){
         default-scope app/gitee/$O
     "'
         repo "Provide repo"
+        id  "Release ID"
     '
-    gt.parse_owner_repo
+    local owner_repo
+    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
+    gt.delete "/v5/repos/$owner_repo/releases/$id" 
 }
 
 gt.repo.release.attachment(){
