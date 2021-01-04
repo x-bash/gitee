@@ -679,6 +679,21 @@ gt.repo.release.update(){
         id tag_name name body prerelease target_commitish
 }
 
+# adopt tag name get release
+gt.repo.release(){
+    local O="${O:-GITEE_DEFAULT}"
+        param "
+        default-scope app/gitee/$O
+    "'
+        repo "Provide repo"
+        tag "Please provide tag"
+    '
+    local owner_repo
+    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
+    gt.get "/v5/repos/$owner_repo/releases" \
+        tag
+}
+
 # ?
 # tag name
 gt.repo.release.get_or_create(){
