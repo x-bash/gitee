@@ -94,3 +94,7 @@ a.repo.release.create --repo "mycw/x-bash-test" --tag_name "v1.0" --name "tzw-te
 a.repo.release.update --repo "mycw/x-bash-test" --tag_name "v1.1" --name "tzw-test" --body "test" --prerelease false --target_commitish "master" --id 11
 # id is variable
 a.repo.release.delete --repo "mycw/x-bash-test" --id 107822
+gt.repo.releaseid --repo "bash-gitee/x-bash-test" --tag "v1.0"
+gt.repo.release.get_or_create --repo "bash-gitee/x-bash-test"  --tag_name "v1.5"  --name "tzw-test" --body "test" --prerelease false --target_commitish "master"
+gt.repo.release.latest_update --repo "bash-gitee/x-bash-test"
+

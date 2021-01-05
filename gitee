@@ -677,12 +677,12 @@ gt.repo.release.update(){
 
     local owner_repo
     owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
-    gt.post.json "/v5/repos/$owner_repo/releases" \
-        id tag_name name body prerelease target_commitish
+    gt.post.json "/v5/repos/$owner_repo/releases/${id}" \
+        tag_name name body prerelease target_commitish
 }
 
 # adopt tag name get release
-gt.repo.releaseid(){
+gt.repo.release(){
     local O="${O:-GITEE_DEFAULT}"
         param "
         default-scope app/gitee/$O
@@ -693,6 +693,18 @@ gt.repo.releaseid(){
     local owner_repo
     owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
     gt.get "/v5/repos/$owner_repo/releases/tags/$tag"  | json.extract \* "id"
+}
+
+gt.repo.release.latest_update(){
+        local O="${O:-GITEE_DEFAULT}"
+        param "
+        default-scope app/gitee/$O
+    "'
+        repo "Provide repo"
+    '
+    local owner_repo
+    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
+    gt.get "/v5/repos/$owner_repo/releases/latest"
 }
 
 # ?
@@ -712,12 +724,13 @@ gt.repo.release.get_or_create(){
     '
     local owner_repo
     owner_repo="$(gt.param.normalize.repo "$repo")"
-    echo "$(gt.repo.releaseid --repo "$owner_repo" --tag "$tag_name")"
-    if [ -n "$(gt.repo.releaseid --repo "$owner_repo" --tag "$tag_name")"]; then return 0
-    fi
-    echo "************"
+    if [ -z "$(gt.repo.releaseid --repo "$owner_repo" --tag "$tag_name")"]; then
     gt.repo.release.create --repo "$repo" --tag_name "$tag_name" --name "name" \
      --body "$body" --prerelease $prerelease --target_commitish "$target_commitish"
+     else
+     echo "Already exists $tag_name"
+    return 0
+    fi
 }
 
 # https://gitee.com/api/v5/swagger#/deleteV5ReposOwnerRepoReleasesId
