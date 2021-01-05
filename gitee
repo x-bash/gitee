@@ -1,6 +1,6 @@
 # shellcheck shell=bash
 
-xrc std/http std/param
+xrc std/http std/param std/json
 
 ############################
 # Section 1: Instantiation & Utilities
@@ -57,7 +57,8 @@ gt.current_owner(){
         return 0
     fi
 
-    data="$(gt.user.info | jq -r .login)"
+    # data="$(gt.user.info | jq -r .login)"
+    data="$(gt.user.info | json.extract \* login)"
     [ -z "$data" ] && return 1
     param.default "app/gitee/$O" owner "$data"
     echo "$data"
@@ -283,7 +284,8 @@ gt.enterprise.repo.list(){
     '
 
     local owner=${_rest_argv[0]}
-    gt.get.multi "/v5/enterprises/$owner/repos" type=all | jq -r ".[] | .full_name"
+    # gt.get.multi "/v5/enterprises/$owner/repos" type=all | jq -r ".[] | .full_name"
+    gt.get.multi "/v5/enterprises/$owner/repos" type=all | json.extract \* "full_name"
 }
 
 # https://gitee.com/api/v5/swagger#/getV5OrgsOrgRepos
@@ -294,7 +296,7 @@ gt.org.repo.list(){
     '
 
     local owner=${_rest_argv[0]}
-    gt.get.multi "/v5/orgs/$owner/repos" type=all | jq -r ".[] | .full_name"
+    gt.get.multi "/v5/orgs/$owner/repos" type=all | json.extract \* "full_name"
 }
 
 # https://gitee.com/api/v5/swagger#/getV5UserRepos
@@ -307,7 +309,7 @@ gt.user.repo.list(){
     '
 
     gt.get.multi "/v5/user/repos" visibility affiliation sort direction\
-        | jq -r ".[] | .full_name"
+        | json.extract \* "full_name"
 }
 
 ############################
@@ -442,7 +444,7 @@ gt.repo.create(){
                 # gt.resp.header "" >&2
                 return $code
             fi
-        } | jq -r .full_name
+        } | json.extract \* .full_name
     done
 }
 
@@ -493,7 +495,7 @@ gt.org.repo.create(){
                 # gt.resp.header "" >&2
                 return $code
             fi
-        } | jq -r .full_name
+        } | json.extract \* full_name
     done
 }
 
@@ -680,7 +682,7 @@ gt.repo.release.update(){
 }
 
 # adopt tag name get release
-gt.repo.release(){
+gt.repo.releaseid(){
     local O="${O:-GITEE_DEFAULT}"
         param "
         default-scope app/gitee/$O
@@ -690,8 +692,7 @@ gt.repo.release(){
     '
     local owner_repo
     owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
-    gt.get "/v5/repos/$owner_repo/releases" \
-        tag
+    gt.get "/v5/repos/$owner_repo/releases/tags/$tag"  | json.extract \* "id"
 }
 
 # ?
@@ -703,12 +704,20 @@ gt.repo.release.get_or_create(){
         default-scope app/gitee/$O
     "'
         repo "Provide repo"
-        owner="" "Repo Owner"
+        tag_name "Please provide tag name"
+        name    "Release name"
+        body    "Release Description"
+        prerelease=false  "Is release version" = true false
+        target_commitish="master"  "Default is master"
     '
-    # owner_repo="$(gt.param.normalize.repo "$repo")"
-    # releases=gt.get.multi "/v5/repos/${owner_repo}/releases"
-    # if [ -n $releases]; then
-    gt.parse_owner_repo
+    local owner_repo
+    owner_repo="$(gt.param.normalize.repo "$repo")"
+    echo "$(gt.repo.releaseid --repo "$owner_repo" --tag "$tag_name")"
+    if [ -n "$(gt.repo.releaseid --repo "$owner_repo" --tag "$tag_name")"]; then return 0
+    fi
+    echo "************"
+    gt.repo.release.create --repo "$repo" --tag_name "$tag_name" --name "name" \
+     --body "$body" --prerelease $prerelease --target_commitish "$target_commitish"
 }
 
 # https://gitee.com/api/v5/swagger#/deleteV5ReposOwnerRepoReleasesId
