@@ -689,10 +689,11 @@ gt.repo.release(){
     "'
         repo "Provide repo"
         tag "Please provide tag"
+        choice=id "What you need id or name" = id name assets
     '
     local owner_repo
     owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
-    gt.get "/v5/repos/$owner_repo/releases/tags/$tag"  | json.extract \* "id"
+    gt.get "/v5/repos/$owner_repo/releases/tags/$tag"  | json.extract $choice
 }
 
 gt.repo.release.latest_update(){
@@ -707,7 +708,6 @@ gt.repo.release.latest_update(){
     gt.get "/v5/repos/$owner_repo/releases/latest"
 }
 
-# ?
 # tag name
 gt.repo.release.get_or_create(){
     local O="${O:-GITEE_DEFAULT}"
@@ -724,7 +724,7 @@ gt.repo.release.get_or_create(){
     '
     local owner_repo
     owner_repo="$(gt.param.normalize.repo "$repo")"
-    if [ -z "$(gt.repo.releaseid --repo "$owner_repo" --tag "$tag_name")"]; then
+    if [ -z "$(gt.repo.releaseid --repo "$owner_repo" --tag "$tag_name")" ]; then
     gt.repo.release.create --repo "$repo" --tag_name "$tag_name" --name "name" \
      --body "$body" --prerelease $prerelease --target_commitish "$target_commitish"
      else
@@ -748,6 +748,7 @@ gt.repo.release.delete(){
     gt.delete "/v5/repos/$owner_repo/releases/$id" 
 }
 
+# TODO
 gt.repo.release.attachment(){
     local O="${O:-GITEE_DEFAULT}"
 
@@ -824,6 +825,7 @@ gt.repo.pr.create(){
         body="" "pull request content"
         milestone_number="" "milestone id"
         labels="" "labels"
+        issue="" "issue id"
         assignees="" "reviewer username list. Format: <username>[,<username>]"
         testers="" "tester username list. Format: <username>[,<username>]"
         prune_source_branch=false = true false
@@ -831,7 +833,8 @@ gt.repo.pr.create(){
 
     local owner_repo
     owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
-
+    gt.post.json "/v5/repos/$owner_repo/pulls" title head base body \
+     milestone_number labels issue assignees testers prune_source_branch
 }
 
 # https://gitee.com/api/v5/swagger#/postV5ReposOwnerRepoPullsNumberAssignees
