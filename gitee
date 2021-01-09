@@ -64,6 +64,7 @@ gt.current_owner(){
     echo "$data"
 }
 
+
 # shellcheck disable=SC2120
 gt.current_owner_type(){
     if [ -n "$1" ]; then
@@ -227,6 +228,18 @@ gt.owner_type.query(){
 
     return 1
 }
+gt.users(){
+
+    local O="${O:-GITEE_DEFAULT}"
+
+    param "
+        default-scope app/gitee/$O
+    "'
+        name    "users name"
+    '
+    gt.get "/v5/users/$name" | json.extract "html_url"
+}
+
 
 gt.user.info(){
     gt.get "/v5/user"
@@ -833,8 +846,11 @@ gt.repo.pr.create(){
 
     local owner_repo
     owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
-    gt.post.json "/v5/repos/$owner_repo/pulls" title head base body \
-     milestone_number labels issue assignees testers prune_source_branch
+
+    local res 
+    res="$(gt.post.json "/v5/repos/$owner_repo/pulls" $title $head $base $body \
+     $milestone_number $labels $issue $assignees $testers $prune_source_branch)"
+     echo $res
 }
 
 # https://gitee.com/api/v5/swagger#/postV5ReposOwnerRepoPullsNumberAssignees
@@ -848,7 +864,7 @@ gt.repo.pr.assign(){
         repo    "Repo name"
         number  "pull request id"
         labels=""
-        assignees="" "reviewer username list. Format: <username>[,<username>]"
+        assignees "reviewer username list. Format: <username>[,<username>]"
     '
 
     local owner_repo
@@ -872,8 +888,6 @@ gt.repo.pr.assign.testers(){
     
     local owner_repo
     owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
-
-    gt.parse_owner_repo
     gt.post.json "/v5/repos/${repo}/pulls/${number}/testers" labels testers
 }
 
@@ -885,12 +899,19 @@ gt.repo.pr.list(){
     "'
         repo    "Repo name"
         state=open = open closed merged all
+        head=""    "source branch. Format: [username:]<branch>"
+        base=""    "target branch. Format: [username:]<branch>"
+        sort=created = created updated popularity long-running
+        direction=desc = desc asc
+        milestone_number="" "milestone id"
+        labels="" "labels"
     '
 
     local owner_repo
     owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
 
-    gt.get.multi "/v5/repos/${owner_repo}/pulls" state
+    gt.get.multi "/v5/repos/${owner_repo}/pulls" state head base \
+     sort direction milestone_number labels | json.extract \* "html_url"
 }
 
 # https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoPullsNumber
