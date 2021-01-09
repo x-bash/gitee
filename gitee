@@ -1014,6 +1014,7 @@ gt.repo.pr.test-status.reset(){
 
 # open navigator, using the viewer
 # https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoPullsNumber
+# TODO
 gt.repo.pr.view(){
     
     param "
@@ -1065,10 +1066,12 @@ gt.repo.pr.issue.list(){
         default-scope app/gitee/$O
     "'
         repo    "Repo name"
+        number "pr number"
     '
 
     local owner_repo
     owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
+    gt.get.multi "/v5/repos/$owner_repo/pulls/$number/issues"
 }
 
 # https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoPullsNumberComments
@@ -1080,10 +1083,14 @@ gt.repo.pr.comment.list(){
         default-scope app/gitee/$O
     "'
         repo    "Repo name"
+        sort=created = created update
+        direction=desc = desc asc
+        since="" "start time ISO 8601"
     '
 
     local owner_repo
     owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
+    gt.get.multi "/v5/repos/$owner_repo/pulls/comments" sort direction since | json.extract \* "body"
 }
 
 
