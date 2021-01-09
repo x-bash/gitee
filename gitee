@@ -997,15 +997,19 @@ gt.repo.pr.review-status.reset(){
 # https://gitee.com/api/v5/swagger#/patchV5ReposOwnerRepoPullsNumberTesters
 gt.repo.pr.test-status.reset(){
     
+    local O="${O:-GITEE_DEFAULT}"
+
     param "
         default-scope app/gitee/$O
     "'
         repo    "Repo name"
+        number  "pull request id"
+        reset_all=true "Reset" = true false
     '
 
     local owner_repo
     owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
-    gt.
+    gt.patch.json "/v5/repos/$owner_repo/pulls/$number/testers" reset_all
 }
 
 # open navigator, using the viewer

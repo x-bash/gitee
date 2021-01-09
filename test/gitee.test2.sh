@@ -106,3 +106,4 @@ a.repo.pr.testers.delete --repo "bash-gitee/x-bash-test" --number 1 --testers "m
 a.repo.pr.testers --repo "bash-gitee/x-bash-test" --number 1 --testers "mycw"
 a.repo.pr.status --repo "bash-gitee/x-bash-test"
 a.repo.pr.review-status.reset --repo "bash-gitee/x-bash-test" --number 1
+a.repo.pr.test-status.reset --repo "bash-gitee/x-bash-test" --number 1
