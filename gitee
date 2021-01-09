@@ -935,13 +935,14 @@ gt.repo.pr.list(){
         direction=desc = desc asc
         milestone_number="" "milestone id"
         labels="" "labels"
+        parameter="html_url" "screen parameter"
     '
 
     local owner_repo
     owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
 
     gt.get.multi "/v5/repos/${owner_repo}/pulls" state head base \
-     sort direction milestone_number labels | json.extract \* "html_url"
+     sort direction milestone_number labels | json.extract \* "$parameter"
 }
 
 # https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoPullsNumber
@@ -960,7 +961,16 @@ gt.repo.pr.open(){
 
 # https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoPullsNumber
 gt.repo.pr.status(){
-    state=all gt.repo.pr.list
+    param "
+        default-scope app/gitee/$O
+    "'
+        repo="" "Repo name"
+        parameter="state"
+    '
+    local state url
+    url="$(gt.repo.pr.list --repo $repo --parameter "html_url")"
+    state="$(gt.repo.pr.list --repo $repo --parameter $parameter)"
+    echo $id $state
 }
 
 # https://gitee.com/api/v5/swagger#/patchV5ReposOwnerRepoPullsNumberAssignees
@@ -987,6 +997,7 @@ gt.repo.pr.test-status.reset(){
 
     local owner_repo
     owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
+    gt.
 }
 
 # open navigator, using the viewer
