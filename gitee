@@ -151,6 +151,10 @@ gt.put.json(){
     O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.put.json "$@"
 }
 
+gt.patch.json(){
+    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.patch.json "$@"
+}
+
 gt.delete(){
     O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.delete "$@";
 }
@@ -975,15 +979,19 @@ gt.repo.pr.status(){
 
 # https://gitee.com/api/v5/swagger#/patchV5ReposOwnerRepoPullsNumberAssignees
 gt.repo.pr.review-status.reset(){
-    
+    local O="${O:-GITEE_DEFAULT}"
+
     param "
         default-scope app/gitee/$O
     "'
-        repo="" "Repo name"
+        repo    "Repo name"
+        number  "pull request id"
+        reset_all=true "Reset" = true false
     '
-    
+
     local owner_repo
     owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
+    gt.patch.json "/v5/repos/$owner_repo/pulls/$number/assignees" reset_all
 }
 
 # https://gitee.com/api/v5/swagger#/patchV5ReposOwnerRepoPullsNumberTesters

@@ -104,3 +104,5 @@ a.repo.pr.assign --repo "bash-gitee/x-bash-test" --number 1 --assignees "mycw"
 a.repo.pr.assign.delete --repo "bash-gitee/x-bash-test" --number 1 --assignees "mycw"
 a.repo.pr.testers.delete --repo "bash-gitee/x-bash-test" --number 1 --testers "mycw"
 a.repo.pr.testers --repo "bash-gitee/x-bash-test" --number 1 --testers "mycw"
+a.repo.pr.status --repo "bash-gitee/x-bash-test"
+a.repo.pr.review-status.reset --repo "bash-gitee/x-bash-test" --number 1
