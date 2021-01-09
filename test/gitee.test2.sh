@@ -98,3 +98,8 @@ a.repo.release --repo "bash-gitee/x-bash-test" --tag "v1.0"
 a.repo.release.get_or_create --repo "bash-gitee/x-bash-test"  --tag_name "v1.5"  --name "tzw-test" --body "test" --prerelease false --target_commitish "master"
 a.repo.release.latest_update --repo "bash-gitee/x-bash-test"
 a.repo.pr.create --repo "bash-gitee/x-bash-test" --title "test create pr" --head "issue_tzw" --base "master"
+a.users --name Niracle
+a.repo.pr.assign --repo "bash-gitee/x-bash-test" --number 1 --assignees "mycw"
+a.repo.pr.assign.delete --repo "bash-gitee/x-bash-test" --number 1 --assignees "mycw"
+a.repo.pr.testers.delete --repo "bash-gitee/x-bash-test" --number 1 --testers "mycw"
+a.repo.pr.testers --repo "bash-gitee/x-bash-test" --number 1 --testers "mycw"

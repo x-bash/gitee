@@ -871,24 +871,54 @@ gt.repo.pr.assign(){
     owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
 
     gt.parse_owner_repo
-    gt.post.json "/v5/repos/${owner_repo}/pulls/${number}/assignees"
+    gt.post.json "/v5/repos/${owner_repo}/pulls/${number}/assignees" assignees
+}
+
+gt.repo.pr.assign.delete(){
+
+    local O="${O:-GITEE_DEFAULT}"
+
+    param "
+        default-scope app/gitee/$O
+    "'
+        repo    "Repo name"
+        number  "pull request id"
+        assignees "reviewer username list. Format: <username>[,<username>]"
+    '
+
+    local owner_repo
+    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
+    gt.delete "/v5/repos/$owner_repo/pulls/$number/assignees?assignees=$assignees" 
 }
 
 # https://gitee.com/api/v5/swagger#/postV5ReposOwnerRepoPullsNumberTesters
-gt.repo.pr.assign.testers(){
+gt.repo.pr.testers(){
     
     param "
         default-scope app/gitee/$O
     "'
         repo "Repo name"
         number "pull request id"
-        labels=""
         testers="" "testers username list. Format: <username>[,<username>]"
+    '
+    local owner_repo
+    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
+    gt.post.json "/v5/repos/${repo}/pulls/${number}/testers" labels testers
+}
+
+gt.repo.pr.testers.delete(){
+    
+    param "
+        default-scope app/gitee/$O
+    "'
+        repo "Repo name"
+        number "pull request id"
+        testers "testers username list. Format: <username>[,<username>]"
     '
     
     local owner_repo
     owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
-    gt.post.json "/v5/repos/${repo}/pulls/${number}/testers" labels testers
+    gt.delete "/v5/repos/${owner_repo}/pulls/${number}/testers?testers=$testers"
 }
 
 # https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoPulls
@@ -915,6 +945,7 @@ gt.repo.pr.list(){
 }
 
 # https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoPullsNumber
+# TODO
 gt.repo.pr.open(){
 
     param "
