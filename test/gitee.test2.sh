@@ -94,3 +94,26 @@ a.repo.release.create --repo "mycw/x-bash-test" --tag_name "v1.0" --name "tzw-te
 a.repo.release.update --repo "mycw/x-bash-test" --tag_name "v1.1" --name "tzw-test" --body "test" --prerelease false --target_commitish "master" --id 11
 # id is variable
 a.repo.release.delete --repo "mycw/x-bash-test" --id 107822
+<<<<<<< HEAD
+=======
+a.repo.release --repo "bash-gitee/x-bash-test" --tag "v1.0"
+a.repo.release.get_or_create --repo "bash-gitee/x-bash-test"  --tag_name "v1.5"  --name "tzw-test" --body "test" --prerelease false --target_commitish "master"
+a.repo.release.latest_update --repo "bash-gitee/x-bash-test"
+
+############################
+# Section 10: Pull Request
+############################
+a.repo.pr.create --repo "bash-gitee/x-bash-test" --title "test create pr" --head "issue_tzw" --base "master"
+a.users --name Niracle
+a.repo.pr.list --repo "bash-gitee/x-bash-test"
+a.repo.pr.assign --repo "bash-gitee/x-bash-test" --number 1 --assignees "mycw"
+a.repo.pr.assign.delete --repo "bash-gitee/x-bash-test" --number 1 --assignees "mycw"
+a.repo.pr.testers.delete --repo "bash-gitee/x-bash-test" --number 1 --testers "mycw"
+a.repo.pr.testers --repo "bash-gitee/x-bash-test" --number 1 --testers "mycw"
+a.repo.pr.status --repo "bash-gitee/x-bash-test"
+a.repo.pr.review-status.reset --repo "bash-gitee/x-bash-test" --number 1
+a.repo.pr.test-status.reset --repo "bash-gitee/x-bash-test" --number 1
+a.repo.pr.issue.list --repo "bash-gitee/x-bash-test" --number 1
+a.repo.pr.comment.list --repo "bash-gitee/x-bash-test"
+
+>>>>>>> c6a8f469687748f3af2cc9dbe96bedcc3edde1f9
