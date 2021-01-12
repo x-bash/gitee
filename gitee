@@ -694,13 +694,6 @@ gt.repo.release.update(){
 
     local owner_repo
     owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
-<<<<<<< HEAD
-    gt.post.json "/v5/repos/$owner_repo/releases" \
-        id tag_name name body prerelease target_commitish
-}
-
-# ?
-=======
     gt.post.json "/v5/repos/$owner_repo/releases/${id}" \
         tag_name name body prerelease target_commitish
 }
@@ -732,7 +725,6 @@ gt.repo.release.latest_update(){
     gt.get "/v5/repos/$owner_repo/releases/latest"
 }
 
->>>>>>> c6a8f469687748f3af2cc9dbe96bedcc3edde1f9
 # tag name
 gt.repo.release.get_or_create(){
     local O="${O:-GITEE_DEFAULT}"
@@ -747,12 +739,6 @@ gt.repo.release.get_or_create(){
         prerelease=false  "Is release version" = true false
         target_commitish="master"  "Default is master"
     '
-<<<<<<< HEAD
-    # owner_repo="$(gt.param.normalize.repo "$repo")"
-    # releases=gt.get.multi "/v5/repos/${owner_repo}/releases"
-    # if [ -n $releases]; then
-    gt.parse_owner_repo
-=======
     local owner_repo
     owner_repo="$(gt.param.normalize.repo "$repo")"
     if [ -z "$(gt.repo.releaseid --repo "$owner_repo" --tag "$tag_name")" ]; then
@@ -762,7 +748,6 @@ gt.repo.release.get_or_create(){
      echo "Already exists $tag_name"
     return 0
     fi
->>>>>>> c6a8f469687748f3af2cc9dbe96bedcc3edde1f9
 }
 
 # https://gitee.com/api/v5/swagger#/deleteV5ReposOwnerRepoReleasesId
