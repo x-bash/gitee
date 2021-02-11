@@ -59,7 +59,7 @@ gt_current_owner(){
     fi
 
     # data="$(gt_user_info | jq -r .login)"
-    data="$(gt_user_info | json.extract \* login)"
+    data="$(gt_user_info | json_extract \* login)"
     [ -z "$data" ] && return 1
     param_default "app/gitee/$O" owner "$data"
     echo "$data"
@@ -243,7 +243,7 @@ gt_users(){
         default gitee_$O
         name    "users name"
 A
-    gt_get "/v5/users/$name" | json.extract "html_url"
+    gt_get "/v5/users/$name" | json_extract "html_url"
 }
 
 
@@ -305,7 +305,7 @@ A
 
     local owner="$0"
     # gt_get_multi "/v5/enterprises/$owner/repos" type=all | jq -r ".[] | .full_name"
-    gt_get_multi "/v5/enterprises/$owner/repos" type=all | json.extract \* "full_name"
+    gt_get_multi "/v5/enterprises/$owner/repos" type=all | json_extract \* "full_name"
 }
 
 # https://gitee.com/api/v5/swagger#/getV5OrgsOrgRepos
@@ -316,7 +316,7 @@ gt_org_repo_list(){
     '
 
     local owner="$0"
-    gt_get_multi "/v5/orgs/$owner/repos" type=all | json.extract \* "full_name"
+    gt_get_multi "/v5/orgs/$owner/repos" type=all | json_extract \* "full_name"
 }
 
 # https://gitee.com/api/v5/swagger#/getV5UserRepos
@@ -329,7 +329,7 @@ gt_user_repo_list(){
 A
 
     gt_get_multi "/v5/user/repos" visibility affiliation sort direction\
-        | json.extract \* "full_name"
+        | json_extract \* "full_name"
 }
 
 ############################
@@ -456,7 +456,7 @@ A
                 # gt_resp_header "" >&2
                 return $code
             fi
-        } | json.extract \* .full_name
+        } | json_extract \* .full_name
     done
 }
 
@@ -506,7 +506,7 @@ A
                 # gt_resp_header "" >&2
                 return $code
             fi
-        } | json.extract \* full_name
+        } | json_extract \* full_name
     done
 }
 
@@ -700,7 +700,7 @@ gt_repo_release(){
 A
     local owner_repo
     owner_repo="$(gt_param_normalize_repo "$repo")" || return 1
-    gt_get "/v5/repos/$owner_repo/releases/tags/$tag"  | json.extract $choice
+    gt_get "/v5/repos/$owner_repo/releases/tags/$tag"  | json_extract $choice
 }
 
 gt_repo_release_latest_update(){
@@ -922,7 +922,7 @@ A
     owner_repo="$(gt_param_normalize_repo "$repo")" || return 1
 
     gt_get_multi "/v5/repos/${owner_repo}/pulls" state head base \
-     sort direction milestone_number labels | json.extract \* "$parameter"
+     sort direction milestone_number labels | json_extract \* "$parameter"
 }
 
 # https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoPullsNumber
@@ -1059,7 +1059,7 @@ A
 
     local owner_repo
     owner_repo="$(gt_param_normalize_repo "$repo")" || return 1
-    gt_get_multi "/v5/repos/$owner_repo/pulls/comments" sort direction since | json.extract \* "body"
+    gt_get_multi "/v5/repos/$owner_repo/pulls/comments" sort direction since | json_extract \* "body"
 }
 
 
