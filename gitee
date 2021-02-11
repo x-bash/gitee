@@ -1,4 +1,4 @@
-# shellcheck shell=bash
+# shellcheck shell=sh
 
 xrc std/http std/param std/json
 
@@ -16,177 +16,178 @@ xrc std/http std/param std/json
 ############################
 
 # shellcheck disable=SC2120
-gt.token(){
+gt_token(){
     local O="${O:-GITEE_DEFAULT}"
-    param.default "app/gitee/$O" "token" "$@"
+    param_default "app/gitee/$O" "token" "$@"
 
     if [ -n "$1" ]; then
         # setter
         local token="$1"
         O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}"
-        http.qs.put access_token "$token"
-        http.body.put access_token "$token"
+        http_qs.put access_token "$token"
+        http_body.put access_token "$token"
     fi
 }
 
 # Current Repo
 
 # shellcheck disable=SC2120
-gt.current_repo(){
+gt_current_repo(){
     local O="${O:-GITEE_DEFAULT}"
-    param.default "app/gitee/$O" "repo" "$@"
+    param_default "app/gitee/$O" "repo" "$@"
 }
 
 # Current User-Type
 
 # shellcheck disable=SC2120
-gt.current_owner(){
+gt_current_owner(){
     local O="${O:-GITEE_DEFAULT}"
 
     if [ -n "$1" ]; then
-        param.default "app/gitee/$O" owner "$1"
-        param.default.delete "app/gitee/$O" owner_type
-        # gt.current_owner_type || echo "Fetch owner type wrong. Please manually set owner-type using 'gt.current_owner_type <owner_type>'." >&2
+        param_default "app/gitee/$O" owner "$1"
+        param_default_delete "app/gitee/$O" owner_type
+        # gt_current_owner_type || echo "Fetch owner type wrong. Please manually set owner-type using 'gt_current_owner_type <owner_type>'." >&2
         return 0
     fi
 
     # get owner type
     local owner
-    if owner="$(param.default "app/gitee/$O" owner)"; then
+    if owner="$(param_default "app/gitee/$O" owner)"; then
         echo "$owner"
         return 0
     fi
 
-    # data="$(gt.user.info | jq -r .login)"
-    data="$(gt.user.info | json.extract \* login)"
+    # data="$(gt_user_info | jq -r .login)"
+    data="$(gt_user_info | json.extract \* login)"
     [ -z "$data" ] && return 1
-    param.default "app/gitee/$O" owner "$data"
+    param_default "app/gitee/$O" owner "$data"
     echo "$data"
 }
 
 
 # shellcheck disable=SC2120
-gt.current_owner_type(){
+gt_current_owner_type(){
     if [ -n "$1" ]; then
         # Set owner type
-        param.default "app/gitee/$O" owner_type "$1"
+        param_default "app/gitee/$O" owner_type "$1"
         return
     fi
 
     local data
-    data="$(param.default "app/gitee/$O" owner_type "$1")"
+    data="$(param_default "app/gitee/$O" owner_type "$1")"
 
     if [ -z "$data" ]; then
-        owner="$(gt.current_owner)"
+        owner="$(gt_current_owner)"
         if [ -z "$owner" ]; then
             echo "Owner is empty. While owner not set." >&2
             return 1
         fi
 
-        data=$(gt.owner_type.query "$owner")
+        data=$(gt_owner_type_query "$owner")
         [ -z "$data" ] && return 1
 
-        param.default "app/gitee/$O" owner_type "$data"
+        param_default "app/gitee/$O" owner_type "$data"
     fi
     printf "%s" "$data"
 }
 
 # Current User
 
-gt.config.which(){
+gt_config_which(){
     local O="${O:-GITEE_DEFAULT}"
     echo "$HOME/.x-cmd.com/config/x-bash/app.gitee.config/$O"
 }
 
-gt.config.save(){
+gt_config_save(){
     local O="${O:-GITEE_DEFAULT}"
     local path="${1:-$HOME/.x-cmd.com/config/x-bash/app.gitee.config/$O}"
-    param.default.save "app/gitee/$O" "$path"
+    param_default_save "app/gitee/$O" "$path"
     echo "Config $O saved in path: $path" >&2
 }
 
 # shellcheck disable=SC2120
-gt.config.load(){
+gt_config_load(){
     local O="${O:-GITEE_DEFAULT}"
     local path="${1:-$HOME/.x-cmd.com/config/x-bash/app.gitee.config/$O}"
-    param.default.load "app/gitee/$O" "$path"
+    param_default_load "app/gitee/$O" "$path"
     echo "Config $O load from path: $path" >&2
-    token="$(param.default "app/gitee/$O" token)"
-    gt.token "$token"
+    token="$(param_default "app/gitee/$O" token)"
+    gt_token "$token"
 }
 
 ############################
 # Section 2: Wrapping std/http module with object naming changing
 ############################
-gt.resp.header(){
-    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.resp.header "$@"
+gt_resp_header(){
+    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http_resp_header "$@"
 }
 
 # TODO: Not supported yet
-gt.resp.body(){
-    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.resp.body "$@"
+gt_resp_body(){
+    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http_resp_body "$@"
 }
 
-gt.get(){
-    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.get "$@"
+gt_get(){
+    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http_get "$@"
 }
 
-gt.get.multi(){
+gt_get_multi(){
     local i=1 total_page=100000
     for (( i=1; i <= total_page; i++ )); do
-        gt.get "$@" page="$i" per_page=100
-        total_page="$(gt.resp.header "total_page")"
+        gt_get "$@" page="$i" per_page=100
+        total_page="$(gt_resp_header "total_page")"
         # echo "total_page:$total_page" >&2
     done
 }
 
-# gt.post(){ O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.post "$@"; }
-gt.post.json(){
-    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.post.json "$@"
+# gt_post(){ O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http_post "$@"; }
+gt_post_json(){
+    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http_post.json "$@"
 }
 
 
-# gt.put(){ O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.put "$@"; }
-gt.put.json(){
-    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.put.json "$@"
+# gt_put(){ O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http_put "$@"; }
+gt_put_json(){
+    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http_put.json "$@"
 }
 
-gt.patch.json(){
-    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.patch.json "$@"
+gt_patch_json(){
+    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http_patch.json "$@"
 }
 
-gt.delete(){
-    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.delete "$@";
+gt_delete(){
+    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http_delete "$@";
 }
 
-gt.dict.getput(){
-    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.dict.getput "$@";
+gt_dict_getput(){
+    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http_dict_getput "$@";
 }
 
-gt.dict.get(){
-    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.dict.get "$@";
+gt_dict_get(){
+    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http_dict_get "$@";
 }
 
-gt.dict.put(){
-    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http.dict.put "$@";
+gt_dict_put(){
+    O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}" http_dict_put "$@";
 }
 
 ############################
 # Section 3: Parameter Utilities
 ############################
-gt.param.normalize.repo(){
+gt_param_normalize_repo(){
     case "$1" in
     */*)
         printf "%s" "$1";;
     "")
-        local _owner _repo
-        _owner="$(gt.current_owner)"
+        local _owner 
+        local _repo
+        _owner="$(gt_current_owner)"
         if [ -z "$_owner" ]; then
             printf "No owner provided. Default owner NOT set.\n" >&2
             return 1
         fi
 
-        _repo="$(gt.current_repo)"
+        _repo="$(gt_current_repo)"
         if [ -z "$_repo" ]; then
             printf "No repo provided. Default repo NOT set.\n" >&2
             return 1
@@ -195,7 +196,7 @@ gt.param.normalize.repo(){
         printf "%s/%s" "$_owner" "$_repo";;
     *)     
         local _owner
-        _owner="$(gt.current_owner)"
+        _owner="$(gt_current_owner)"
         if [ -z "$_owner" ]; then
             printf "No owner provided. Default owner not set.\n" >&2
         fi
@@ -205,17 +206,18 @@ gt.param.normalize.repo(){
 
 ### Repo #1
 
-gt.parse_owner_repo(){
+gt_parse_owner_repo(){
     local O="${O:-GITEE_DEFAULT}"
     if [ -z "$repo" ]; then
-        repo="$(gt.current_repo)"
+        repo="$(gt_current_repo)"
     fi
-    if [[ "$repo" = */* ]]; then
+    # if [[ "$repo" = */* ]]; then
+    if str_regex "$repo" "/"; then
         owner=${repo%%/*}
         repo=${repo##*/}
     fi
     if [ -z "$owner" ]; then
-        owner="$(gt.current_owner)"
+        owner="$(gt_current_owner)"
     fi
 }
 
@@ -223,16 +225,16 @@ gt.parse_owner_repo(){
 # Section 4: Info & Org Creation
 ############################
 # TODO: better solution?
-gt.owner_type.query(){
+gt_owner_type_query(){
     local owner="${1:?Provide owner name}"
     
-    gt.org.info "$owner" 1>/dev/null 2>&1 && printf "org" && return 0
-    gt.enterprise.info "$owner" 1>/dev/null 2>&1 && printf "enterprise" && return 0
-    gt.user.info "$owner" 1>/dev/null 2>&1 && printf "user" && return 0
+    gt_org_info "$owner" 1>/dev/null 2>&1 && printf "org" && return 0
+    gt_enterprise_info "$owner" 1>/dev/null 2>&1 && printf "enterprise" && return 0
+    gt_user_info "$owner" 1>/dev/null 2>&1 && printf "user" && return 0
 
     return 1
 }
-gt.users(){
+gt_users(){
 
     local O="${O:-GITEE_DEFAULT}"
 
@@ -241,203 +243,204 @@ gt.users(){
     "'
         name    "users name"
     '
-    gt.get "/v5/users/$name" | json.extract "html_url"
+    gt_get "/v5/users/$name" | json.extract "html_url"
 }
 
 
-gt.user.info(){
-    gt.get "/v5/user"
+gt_user_info(){
+    gt_get "/v5/user"
 }
 
-gt.enterprise.info(){
-    gt.get "/v5/enterprises/${1:?Provide enterprise}"
+gt_enterprise_info(){
+    gt_get "/v5/enterprises/${1:?Provide enterprise}"
 }
 
-gt.org.info(){
-    gt.get "/v5/orgs/${1:?Provide organization}"
+gt_org_info(){
+    gt_get "/v5/orgs/${1:?Provide organization}"
 }
 
 # It is very rare
-gt.org.create(){
+gt_org_create(){
     param '
         ... "organization name" =str
     '
     local org
-    for org in "${_rest_argv[@]}"; do
-        gt.post.json "/v5/users/organization" name="$org" org="$org"
+    for org in "$@"; do
+        gt_post_json "/v5/users/organization" name="$org" org="$org"
     done
 }
 
 ############################
 # Section 5: List Repos
 ############################
-gt.repo.list(){
+gt_repo_list(){
     param '
         #1  "Provide owner"
     '
 
-    local owner owner_type
-    owner="${_rest_argv[0]}"
+    local owner 
+    local owner_type
+    owner="$0"
     if [ -z "$owner" ]; then
-        gt.user.repo.list "$@"
+        gt_user_repo_list "$@"
     else
-        owner_type="$(gt.owner_type.query "$owner")"
+        owner_type="$(gt_owner_type_query "$owner")"
     fi
 
     if [ -n "$owner_type" ] && [ -n "$owner" ]; then
-        "gt.${owner_type}.repo.list" "$@"
+        "gt_${owner_type}_repo_list" "$@"
     else
         printf "Please provide owner and owner_type\n" >&2
-        param.help.show
+        param_help.show
     fi
 }
 
 # https://gitee.com/api/v5/swagger#/getV5EnterprisesEnterpriseRepos
-gt.enterprise.repo.list(){
+gt_enterprise_repo_list(){
     param '
         #1 "Provide enterprise"
-        type=all "repo type" = all public internal private
-        direct=true "" = true false
+        --type=all      "repo type"     = all public internal private
+        --direct=true   ""              = true false
     '
 
-    local owner=${_rest_argv[0]}
-    # gt.get.multi "/v5/enterprises/$owner/repos" type=all | jq -r ".[] | .full_name"
-    gt.get.multi "/v5/enterprises/$owner/repos" type=all | json.extract \* "full_name"
+    local owner="$0"
+    # gt_get_multi "/v5/enterprises/$owner/repos" type=all | jq -r ".[] | .full_name"
+    gt_get_multi "/v5/enterprises/$owner/repos" type=all | json.extract \* "full_name"
 }
 
 # https://gitee.com/api/v5/swagger#/getV5OrgsOrgRepos
-gt.org.repo.list(){
+gt_org_repo_list(){
     param '
         #1 "Provide organization"
-        type=all "repo type" = all public privates
+        --type=all          "repo type"     = all public privates
     '
 
-    local owner=${_rest_argv[0]}
-    gt.get.multi "/v5/orgs/$owner/repos" type=all | json.extract \* "full_name"
+    local owner="$0"
+    gt_get_multi "/v5/orgs/$owner/repos" type=all | json.extract \* "full_name"
 }
 
 # https://gitee.com/api/v5/swagger#/getV5UserRepos
-gt.user.repo.list(){
+gt_user_repo_list(){
     param '
-        visibility=all "" = public private all
-        affiliation=owner =, owner collaborator organization_member enterprise_member admin
-        sort=created "" = created updated pushed full_name
-        direction="desc" = asc desc
+        --visibility=all    ""      = public private all
+        --affiliation=owner ""      =, owner collaborator organization_member enterprise_member admin
+        --sort=created      ""      = created updated pushed full_name
+        --direction="desc"  ""      = asc desc
     '
 
-    gt.get.multi "/v5/user/repos" visibility affiliation sort direction\
+    gt_get_multi "/v5/user/repos" visibility affiliation sort direction\
         | json.extract \* "full_name"
 }
 
 ############################
 # Section 6: Repo Path & Clone
 ############################
-gt.repo.url.http(){
+gt_repo_url_http(){
     param '
         ...  "Provide repo list"
     '
 
     local repo
-    for repo in "${_rest_argv[@]}"; do
-        printf "https://gitee.com/%s.git\n" "$(gt.param.normalize.repo "$repo")"
+    for repo in "$@"; do
+        printf "https://gitee.com/%s.git\n" "$(gt_param_normalize_repo "$repo")"
     done
 }
 
-gt.repo.url(){
-    gt.repo.url.ssh "$@"
+gt_repo_url(){
+    gt_repo_url_ssh "$@"
 }
 
-gt.repo.url.ssh(){
+gt_repo_url_ssh(){
     param '
         ... "Provide repo list"
     '
 
     local repo
-    for repo in "${_rest_argv[@]}"; do
-        printf "git@gitee.com:%s.git\n" "$(gt.param.normalize.repo "$repo")"
+    for repo in "$@"; do
+        printf "git@gitee.com:%s.git\n" "$(gt_param_normalize_repo "$repo")"
     done
 }
 
-gt_.repo.url.ssh(){
+gt__repo_url_ssh(){
     local repo
     for repo in "$@"; do
-        printf "git@gitee.com:%s.git\n" "$(gt.param.normalize.repo "$repo")"
+        printf "git@gitee.com:%s.git\n" "$(gt_param_normalize_repo "$repo")"
     done
 }
 
-gt.repo.clone(){
-    gt.repo.clone.ssh "$@" && return 0
-    gt.repo.clone.https "$@" && return 0
+gt_repo_clone(){
+    gt_repo_clone_ssh "$@" && return 0
+    gt_repo_clone_https "$@" && return 0
     return $?
 }
 
 # shellcheck disable=SC2120
-gt.repo.clone.ssh(){
-    git clone "$(gt.repo.url.ssh "$@")"
+gt_repo_clone_ssh(){
+    git clone "$(gt_repo_url_ssh "$@")"
 }
 
 # shellcheck disable=SC2120
-gt.repo.clone.https(){
-    git clone "$(gt.repo.url.http "$@")"
+gt_repo_clone_https(){
+    git clone "$(gt_repo_url_http "$@")"
 }
 
 # https://gitee.com/api/v5/swagger#/postV5ReposOwnerRepoForks
 # TODO Not available Gitee return Not Found Project
-gt.repo.fork(){
+gt_repo_fork(){
     param '
-        repo    "Repo name" =str
-        organization=""    "Provide organization"  =str
+        --repo              "Repo name"
+        --organization=""   "Provide organization"
     '
 
     local owner_repo
-    owner_repo="$(gt.param.normalize.repo "$repo")"
+    owner_repo="$(gt_param_normalize_repo "$repo")"
     
-    gt.post.json "https://gitee.com/api/v5/repos/${owner_repo}/forks" organization
+    gt_post_json "https://gitee.com/api/v5/repos/${owner_repo}/forks" organization
 }
 
 
 ############################
 # Section 7: Repo - Deletion & Info & Creation
 ############################
-gt.repo.info(){
+gt_repo_info(){
     param '
         #1      "Provide repo"
     '
 
     local owner_repo
-    owner_repo="$(gt.param.normalize.repo "$1")"
+    owner_repo="$(gt_param_normalize_repo "$1")"
 
-    gt.get "/v5/repos/${owner_repo}"
-    # gt.get "/v5/repos/${owner}/${repo}"
+    gt_get "/v5/repos/${owner_repo}"
+    # gt_get "/v5/repos/${owner}/${repo}"
 }
 
 # https://gitee.com/api/v5/swagger#/deleteV5ReposOwnerRepo
-gt.repo.destroy(){
+gt_repo_destroy(){
     param '
         ... "Provide repo list"
     '
 
-    local owner_repo i
-
-    for i in "${_rest_argv[@]}"; do
-        owner_repo=$(gt.param.normalize.repo "$1")
+    local owner_repo 
+    local i
+    for i in "$@"; do
+        owner_repo="$(gt_param_normalize_repo "$1")"
 
         echo "Deleting repo: $owner_repo" >&2
-        gt.delete "/v5/repos/$owner_repo" >/dev/null \
+        gt_delete "/v5/repos/$owner_repo" >/dev/null \
             || echo "Code is $?. Deleting repo failure: $1. Probably because it desn't exists." >&2
     done
 }
 
 # arguments NAME
-gt.repo.create(){
+gt_repo_create(){
     local O="${O:-GITEE_DEFAULT}"
 
     param "
         default-scope app/gitee/$O
     "'
-        has_issues=true  "Provide issue"   = true false
-        has_wiki=true    "Provide wiki"   = true false
-        access=private   "Provide access"   = public private innerSource
+        --has_issues=true  "Provide issue"      = true false
+        --has_wiki=true    "Provide wiki"       = true false
+        --access=private   "Provide access"     = public private innerSource
     '
 
     local private
@@ -447,18 +450,18 @@ gt.repo.create(){
     esac
 
     if [ "$#" -eq 0 ]; then
-        param.help.show
+        param_help.show
         return 1
     fi
 
     local name
-    for name in "${_rest_argv[@]}"; do
+    for name in "$@"; do
         { 
-            gt.post.json "/v5/user/repos" name has_issues has_wiki private 2>/dev/null
+            gt_post_json "/v5/user/repos" name has_issues has_wiki private 2>/dev/null
             code=$?
             if [ $code -ne 0 ]; then
                 echo "Creating repo failure: $name. Code is $code. " >&2
-                # gt.resp.header "" >&2
+                # gt_resp_header "" >&2
                 return $code
             fi
         } | json.extract \* .full_name
@@ -469,23 +472,23 @@ gt.repo.create(){
 # shellcheck disable=SC2154,SC2034
 
 # https://gitee.com/api/v5/swagger#/postV5OrgsOrgRepos
-gt.org.repo.create(){
+gt_org_repo_create(){
     # TODO: I don't know what does path means for an organization repo
     # path is null default repo name as path
     param "
         default-scope app/gitee/$O
     "'
-        path=""    "provide path"
-        description=""     "repo description"
-        homepage=""        "repo home page"
-        has_issues=true     = true false
-        has_wiki=true       = true false
-        can_comment=true    = true false
-        access=private      = public private innerSource
-        auto_init=false     = true false
-        gitignore_template=""
-        license_template=""
-        ...     "repo list to create" =str
+        --path=""               "provide path"
+        --description=""        "repo description"
+        --homepage=""           "repo home page"
+        --has_issues=true       ""                  = true false
+        --has_wiki=true         ""                  = true false
+        --can_comment=true      ""                  = true false
+        --access=private        ""                  = public private innerSource
+        --auto_init=false       ""                  = true false
+        --gitignore_template="" ""
+        --license_template=""   ""
+        ...                     "repo list to create"
     '
 
     local public
@@ -496,20 +499,20 @@ gt.org.repo.create(){
     esac
 
     local name owner
-    for name in "${_rest_argv[@]}"; do
-        name="$(gt.param.normalize.repo "$name")"
+    for name in "$@"; do
+        name="$(gt_param_normalize_repo "$name")"
         owner="$(echo "$name" | cut -d / -f 1)"
         name="$(echo "$name" | cut -d / -f 2)"
 
         local resp
         {
-            gt.post.json "/v5/orgs/$owner/repos" \
+            gt_post_json "/v5/orgs/$owner/repos" \
                 name path description homepage has_issues has_wiki public\
                 can_comment auto_init gitignore_template license_template
             code=$?
             if [ $code -ne 0 ]; then
                 echo "Creating repo failure: $name. Code is $code. " >&2
-                # gt.resp.header "" >&2
+                # gt_resp_header "" >&2
                 return $code
             fi
         } | json.extract \* full_name
@@ -518,13 +521,13 @@ gt.org.repo.create(){
 
 # https://gitee.com/api/v5/swagger#/postV5EnterprisesEnterpriseRepos
 # shellcheck disable=SC2154
-gt.enterprise.repo.create(){
+gt_enterprise_repo_create(){
     param '
-        owner   "enterprise name"
-        has_issues=true     = true false
-        has_wiki=true       = true false
-        access=private      = public private innerSource
-        outsourced=false    = true false
+        --owner   "enterprise name"
+        --has_issues=true     = true false
+        --has_wiki=true       = true false
+        --access=private      = public private innerSource
+        --outsourced=false    = true false
         ...     "repo list to create" =str
     '
 
@@ -538,8 +541,8 @@ gt.enterprise.repo.create(){
 
     # TODO
     local name
-    for name in "${_rest_argv[@]}"; do
-        gt.post.json "/v5/enterprises/$owner/repos" name has_issues has_wiki private
+    for name in "$@"; do
+        gt_post_json "/v5/enterprises/$owner/repos" name has_issues has_wiki private
     done
     return 0
 }
@@ -548,65 +551,65 @@ gt.enterprise.repo.create(){
 # Section 8: Repo Member
 ############################
 # https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoCollaborators
-gt.repo.member.list(){
-    param.example \
+gt_repo_member_list(){
+    param_example \
         "list all members, using argument" \
-        "gt.repo.member.list x-bash/std" \
+        "gt_repo_member_list x-bash/std" \
         "list all members, using naming argument" \
-        "gt.repo.member.list --repo x-bash/std"
+        "gt_repo_member_list --repo x-bash/std"
     
     param '
         #1      "Provide repo"
     '
 
     local owner_repo
-    owner_repo="$(gt.param.normalize.repo "$1")"
+    owner_repo="$(gt_param_normalize_repo "$1")"
 
-    gt.get "/v5/repos/${owner_repo}/collaborators"
+    gt_get "/v5/repos/${owner_repo}/collaborators"
 }
 
-# gt.repo.member.add pull:edwinjhlee,work,adf push:work,adf admin:edwinjhlee
+# gt_repo_member_add pull:edwinjhlee,work,adf push:work,adf admin:edwinjhlee
 
 # https://gitee.com/api/v5/swagger#/putV5ReposOwnerRepoCollaboratorsUsername
-gt.repo.member.add(){
-    param.example \
+gt_repo_member_add(){
+    param_example \
         "Add user with pull permission" \
-        "gt.repo.member.add --repo=x-bash/work --permission pull user1 user2"
+        "gt_repo_member_add --repo=x-bash/work --permission pull user1 user2"
         "Add user with push permission" \
-        "gt.repo.member.add --repo=x-bash/work --permission push user3"\
+        "gt_repo_member_add --repo=x-bash/work --permission push user3"\
         "Add user with push permission" \
-        "gt.repo.member.add --repo=x-bash/work pull:user1,user2 push:user3s"\
+        "gt_repo_member_add --repo=x-bash/work pull:user1,user2 push:user3s"\
 
     param '
-        repo="" "Repo name"
-        permission=pull "Repo permission" = push push admin
+        --repo="" "Repo name"
+        --permission=pull "Repo permission" = push push admin
         ... "User list"
     '
 
-    repo="$(gt.param.normalize.repo "$repo")" || return 1
+    repo="$(gt_param_normalize_repo "$repo")" || return 1
 
     local username
-    for username in "${_rest_argv[@]}"; do
-        gt.put.json "/v5/repos/$owner/$repo/collaborators/$username" permission
+    for username in "$@"; do
+        gt_put_json "/v5/repos/$owner/$repo/collaborators/$username" permission
     done
 }
 
 # https://gitee.com/api/v5/swagger#/deleteV5ReposOwnerRepoCollaboratorsUsername
-gt.repo.member.remove(){
+gt_repo_member_remove(){
     local O="${O:-GITEE_DEFAULT}"
 
     param "
         default-scope app/gitee/$O
     "'
-        repo "Provide repo"
+        --repo "Provide repo"
     '
 
     local owner_repo
-    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
+    owner_repo="$(gt_param_normalize_repo "$repo")" || return 1
 
     local username
     for username in "$@"; do
-        gt.delete "/v5/repos/$owner_repo/collaborators/$username"
+        gt_delete "/v5/repos/$owner_repo/collaborators/$username"
     done
 }
 
@@ -614,27 +617,27 @@ gt.repo.member.remove(){
 # Section 9: Repo Page Managment
 ############################
 # https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoPages
-gt.repo.page.info(){
+gt_repo_page_info(){
     param '
         #1      "Provide repo"
     '
 
     local owner_repo
-    owner_repo="$(gt.param.normalize.repo "$1")"
-    gt.get "/v5/repos/${owner_repo}/pages"
+    owner_repo="$(gt_param_normalize_repo "$1")"
+    gt_get "/v5/repos/${owner_repo}/pages"
 }
 
 # https://gitee.com/api/v5/swagger#/postV5ReposOwnerRepoPagesBuilds
 # Even we could use it
 # {"message":"非付费pages，不允许部署 pages"}
-gt.repo.page.build(){
+gt_repo_page_build(){
     param '
         #1      "Provide repo"
     '
 
     local owner_repo
-    owner_repo="$(gt.param.normalize.repo "$1")"
-    gt.post.json "/v5/repos/${owner_repo}/pages/builds"
+    owner_repo="$(gt_param_normalize_repo "$1")"
+    gt_post_json "/v5/repos/${owner_repo}/pages/builds"
 }
 
 
@@ -644,18 +647,18 @@ gt.repo.page.build(){
 # Section 10: Release
 ############################
 # https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoReleases
-gt.repo.release.list(){
+gt_repo_release_list(){
     param '
         #1      "Provide repo"
     '
 
     local owner_repo
-    owner_repo="$(gt.param.normalize.repo "$1")"
-    gt.get.multi "/v5/repos/${owner_repo}/releases"
+    owner_repo="$(gt_param_normalize_repo "$1")"
+    gt_get_multi "/v5/repos/${owner_repo}/releases"
 }
 
 # https://gitee.com/api/v5/swagger#/postV5ReposOwnerRepoReleases
-gt.repo.release.create(){
+gt_repo_release_create(){
     local O="${O:-GITEE_DEFAULT}"
 
     param "
@@ -670,14 +673,14 @@ gt.repo.release.create(){
     '
 
     local owner_repo
-    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
+    owner_repo="$(gt_param_normalize_repo "$repo")" || return 1
 
-    gt.post.json "/v5/repos/$owner_repo/releases" \
+    gt_post_json "/v5/repos/$owner_repo/releases" \
         tag_name name body prerelease target_commitish
 }
 
 # https://gitee.com/api/v5/swagger#/patchV5ReposOwnerRepoReleasesId
-gt.repo.release.update(){
+gt_repo_release_update(){
     local O="${O:-GITEE_DEFAULT}"
 
     param "
@@ -693,13 +696,13 @@ gt.repo.release.update(){
     '
 
     local owner_repo
-    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
-    gt.post.json "/v5/repos/$owner_repo/releases/${id}" \
+    owner_repo="$(gt_param_normalize_repo "$repo")" || return 1
+    gt_post_json "/v5/repos/$owner_repo/releases/${id}" \
         tag_name name body prerelease target_commitish
 }
 
 # adopt tag name get release
-gt.repo.release(){
+gt_repo_release(){
     local O="${O:-GITEE_DEFAULT}"
         param "
         default-scope app/gitee/$O
@@ -709,11 +712,11 @@ gt.repo.release(){
         choice=id "What you need id or name" = id name assets
     '
     local owner_repo
-    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
-    gt.get "/v5/repos/$owner_repo/releases/tags/$tag"  | json.extract $choice
+    owner_repo="$(gt_param_normalize_repo "$repo")" || return 1
+    gt_get "/v5/repos/$owner_repo/releases/tags/$tag"  | json.extract $choice
 }
 
-gt.repo.release.latest_update(){
+gt_repo_release_latest_update(){
         local O="${O:-GITEE_DEFAULT}"
         param "
         default-scope app/gitee/$O
@@ -721,12 +724,12 @@ gt.repo.release.latest_update(){
         repo "Provide repo"
     '
     local owner_repo
-    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
-    gt.get "/v5/repos/$owner_repo/releases/latest"
+    owner_repo="$(gt_param_normalize_repo "$repo")" || return 1
+    gt_get "/v5/repos/$owner_repo/releases/latest"
 }
 
 # tag name
-gt.repo.release.get_or_create(){
+gt_repo_release_get_or_create(){
     local O="${O:-GITEE_DEFAULT}"
 
     param "
@@ -740,9 +743,9 @@ gt.repo.release.get_or_create(){
         target_commitish="master"  "Default is master"
     '
     local owner_repo
-    owner_repo="$(gt.param.normalize.repo "$repo")"
-    if [ -z "$(gt.repo.releaseid --repo "$owner_repo" --tag "$tag_name")" ]; then
-    gt.repo.release.create --repo "$repo" --tag_name "$tag_name" --name "name" \
+    owner_repo="$(gt_param_normalize_repo "$repo")"
+    if [ -z "$(gt_repo_releaseid --repo "$owner_repo" --tag "$tag_name")" ]; then
+    gt_repo_release_create --repo "$repo" --tag_name "$tag_name" --name "name" \
      --body "$body" --prerelease $prerelease --target_commitish "$target_commitish"
      else
      echo "Already exists $tag_name"
@@ -751,7 +754,7 @@ gt.repo.release.get_or_create(){
 }
 
 # https://gitee.com/api/v5/swagger#/deleteV5ReposOwnerRepoReleasesId
-gt.repo.release.delete(){
+gt_repo_release_delete(){
     local O="${O:-GITEE_DEFAULT}"
 
     param "
@@ -761,12 +764,12 @@ gt.repo.release.delete(){
         id  "Release ID"
     '
     local owner_repo
-    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
-    gt.delete "/v5/repos/$owner_repo/releases/$id" 
+    owner_repo="$(gt_param_normalize_repo "$repo")" || return 1
+    gt_delete "/v5/repos/$owner_repo/releases/$id" 
 }
 
 # TODO
-gt.repo.release.attachment(){
+gt_repo_release_attachment(){
     local O="${O:-GITEE_DEFAULT}"
 
     param "
@@ -775,10 +778,10 @@ gt.repo.release.attachment(){
         owner="" "Repo Owner"
         repo="" "Repo name"
     '
-    gt.parse_owner_repo
+    gt_parse_owner_repo
 }
 
-gt.repo.release.attachment.list(){
+gt_repo_release_attachment_list(){
 
     local O="${O:-GITEE_DEFAULT}"
 
@@ -789,11 +792,11 @@ gt.repo.release.attachment.list(){
     '
     
     local owner_repo
-    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
+    owner_repo="$(gt_param_normalize_repo "$repo")" || return 1
 }
 
 # Provide multiple files
-gt.repo.release.attachment.upload(){
+gt_repo_release_attachment_upload(){
 
     local O="${O:-GITEE_DEFAULT}"
 
@@ -804,11 +807,11 @@ gt.repo.release.attachment.upload(){
     '
     
     local owner_repo
-    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
+    owner_repo="$(gt_param_normalize_repo "$repo")" || return 1
 }
 
 # Delete the file in attachment list
-gt.repo.release.attachment.remove(){
+gt_repo_release_attachment_remove(){
 
     local O="${O:-GITEE_DEFAULT}"
 
@@ -819,7 +822,7 @@ gt.repo.release.attachment.remove(){
     '
     
     local owner_repo
-    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
+    owner_repo="$(gt_param_normalize_repo "$repo")" || return 1
 }
 
 
@@ -828,7 +831,7 @@ gt.repo.release.attachment.remove(){
 ############################
 ### Pull Request Facility. It should fit it the pull request workflow.
 # https://gitee.com/api/v5/swagger#/postV5ReposOwnerRepoPulls
-gt.repo.pr.create(){
+gt_repo_pr_create(){
 
     local O="${O:-GITEE_DEFAULT}"
 
@@ -849,16 +852,16 @@ gt.repo.pr.create(){
     '
 
     local owner_repo
-    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
+    owner_repo="$(gt_param_normalize_repo "$repo")" || return 1
 
     local res 
-    res="$(gt.post.json "/v5/repos/$owner_repo/pulls" $title $head $base $body \
+    res="$(gt_post_json "/v5/repos/$owner_repo/pulls" $title $head $base $body \
      $milestone_number $labels $issue $assignees $testers $prune_source_branch)"
      echo $res
 }
 
 # https://gitee.com/api/v5/swagger#/postV5ReposOwnerRepoPullsNumberAssignees
-gt.repo.pr.assign(){
+gt_repo_pr_assign(){
 
     local O="${O:-GITEE_DEFAULT}"
 
@@ -872,13 +875,13 @@ gt.repo.pr.assign(){
     '
 
     local owner_repo
-    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
+    owner_repo="$(gt_param_normalize_repo "$repo")" || return 1
 
-    gt.parse_owner_repo
-    gt.post.json "/v5/repos/${owner_repo}/pulls/${number}/assignees" assignees
+    gt_parse_owner_repo
+    gt_post_json "/v5/repos/${owner_repo}/pulls/${number}/assignees" assignees
 }
 
-gt.repo.pr.assign.delete(){
+gt_repo_pr_assign_delete(){
 
     local O="${O:-GITEE_DEFAULT}"
 
@@ -891,12 +894,12 @@ gt.repo.pr.assign.delete(){
     '
 
     local owner_repo
-    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
-    gt.delete "/v5/repos/$owner_repo/pulls/$number/assignees?assignees=$assignees" 
+    owner_repo="$(gt_param_normalize_repo "$repo")" || return 1
+    gt_delete "/v5/repos/$owner_repo/pulls/$number/assignees?assignees=$assignees" 
 }
 
 # https://gitee.com/api/v5/swagger#/postV5ReposOwnerRepoPullsNumberTesters
-gt.repo.pr.testers(){
+gt_repo_pr_testers(){
     
     param "
         default-scope app/gitee/$O
@@ -906,11 +909,11 @@ gt.repo.pr.testers(){
         testers="" "testers username list. Format: <username>[,<username>]"
     '
     local owner_repo
-    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
-    gt.post.json "/v5/repos/${repo}/pulls/${number}/testers" labels testers
+    owner_repo="$(gt_param_normalize_repo "$repo")" || return 1
+    gt_post_json "/v5/repos/${repo}/pulls/${number}/testers" labels testers
 }
 
-gt.repo.pr.testers.delete(){
+gt_repo_pr_testers.delete(){
     
     param "
         default-scope app/gitee/$O
@@ -921,12 +924,12 @@ gt.repo.pr.testers.delete(){
     '
     
     local owner_repo
-    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
-    gt.delete "/v5/repos/${owner_repo}/pulls/${number}/testers?testers=$testers"
+    owner_repo="$(gt_param_normalize_repo "$repo")" || return 1
+    gt_delete "/v5/repos/${owner_repo}/pulls/${number}/testers?testers=$testers"
 }
 
 # https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoPulls
-gt.repo.pr.list(){
+gt_repo_pr_list(){
 
     param "
         default-scope app/gitee/$O
@@ -943,15 +946,15 @@ gt.repo.pr.list(){
     '
 
     local owner_repo
-    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
+    owner_repo="$(gt_param_normalize_repo "$repo")" || return 1
 
-    gt.get.multi "/v5/repos/${owner_repo}/pulls" state head base \
+    gt_get_multi "/v5/repos/${owner_repo}/pulls" state head base \
      sort direction milestone_number labels | json.extract \* "$parameter"
 }
 
 # https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoPullsNumber
 # TODO
-gt.repo.pr.open(){
+gt_repo_pr_open(){
 
     param "
         default-scope app/gitee/$O
@@ -960,11 +963,11 @@ gt.repo.pr.open(){
     '
 
     local owner_repo
-    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
+    owner_repo="$(gt_param_normalize_repo "$repo")" || return 1
 }
 
 # https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoPullsNumber
-gt.repo.pr.status(){
+gt_repo_pr_status(){
     param "
         default-scope app/gitee/$O
     "'
@@ -972,13 +975,13 @@ gt.repo.pr.status(){
         parameter="state"
     '
     local state url
-    url="$(gt.repo.pr.list --repo $repo --parameter "html_url")"
-    state="$(gt.repo.pr.list --repo $repo --parameter $parameter)"
+    url="$(gt_repo_pr_list --repo $repo --parameter "html_url")"
+    state="$(gt_repo_pr_list --repo $repo --parameter $parameter)"
     echo $id $state
 }
 
 # https://gitee.com/api/v5/swagger#/patchV5ReposOwnerRepoPullsNumberAssignees
-gt.repo.pr.review-status.reset(){
+gt_repo_pr_review_status_reset(){
     local O="${O:-GITEE_DEFAULT}"
 
     param "
@@ -990,12 +993,12 @@ gt.repo.pr.review-status.reset(){
     '
 
     local owner_repo
-    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
-    gt.patch.json "/v5/repos/$owner_repo/pulls/$number/assignees" reset_all
+    owner_repo="$(gt_param_normalize_repo "$repo")" || return 1
+    gt_patch_json "/v5/repos/$owner_repo/pulls/$number/assignees" reset_all
 }
 
 # https://gitee.com/api/v5/swagger#/patchV5ReposOwnerRepoPullsNumberTesters
-gt.repo.pr.test-status.reset(){
+gt_repo_pr_test_status_reset(){
     
     local O="${O:-GITEE_DEFAULT}"
 
@@ -1008,14 +1011,14 @@ gt.repo.pr.test-status.reset(){
     '
 
     local owner_repo
-    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
-    gt.patch.json "/v5/repos/$owner_repo/pulls/$number/testers" reset_all
+    owner_repo="$(gt_param_normalize_repo "$repo")" || return 1
+    gt_patch_json "/v5/repos/$owner_repo/pulls/$number/testers" reset_all
 }
 
 # open navigator, using the viewer
 # https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoPullsNumber
 # TODO
-gt.repo.pr.view(){
+gt_repo_pr_view(){
     
     param "
         default-scope app/gitee/$O
@@ -1025,12 +1028,12 @@ gt.repo.pr.view(){
     '
     
     local owner_repo
-    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
+    owner_repo="$(gt_param_normalize_repo "$repo")" || return 1
 
-    http.browse "https://gitee.com/${owner_repo}/pulls/${id}"
+    http_browse "https://gitee.com/${owner_repo}/pulls/${id}"
 }
 
-gt.repo.pr.checkout.http(){
+gt_repo_pr_checkout_http(){
     param "
         default-scope app/gitee/$O
     "'
@@ -1038,15 +1041,16 @@ gt.repo.pr.checkout.http(){
     '
 
     local owner_repo
-    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
+    owner_repo="$(gt_param_normalize_repo "$repo")" || return 1
 }
 
+# TODO: repo_url
 # git clone to local disk to compare
-gt.repo.pr.merge.http(){
+gt_repo_pr_merge_http(){
     local source_branch="${1:?Provide source branch}"
     local target_branch="${1:?Provide target branch}"
 
-    local repo_name=${repo_url##*/}
+    local repo_name="${repo_url##*/}"
     repo_name=${repo_name%.git}
 
     if ! git branch; then
@@ -1061,7 +1065,7 @@ gt.repo.pr.merge.http(){
 }
 
 # https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoPullsNumberIssues
-gt.repo.pr.issue.list(){
+gt_repo_pr_issue_list(){
     param "
         default-scope app/gitee/$O
     "'
@@ -1070,12 +1074,12 @@ gt.repo.pr.issue.list(){
     '
 
     local owner_repo
-    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
-    gt.get.multi "/v5/repos/$owner_repo/pulls/$number/issues"
+    owner_repo="$(gt_param_normalize_repo "$repo")" || return 1
+    gt_get_multi "/v5/repos/$owner_repo/pulls/$number/issues"
 }
 
 # https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoPullsNumberComments
-gt.repo.pr.comment.list(){
+gt_repo_pr_comment_list(){
     : TODO: assitance
     : list all of the comment in the terminal
 
@@ -1089,54 +1093,54 @@ gt.repo.pr.comment.list(){
     '
 
     local owner_repo
-    owner_repo="$(gt.param.normalize.repo "$repo")" || return 1
-    gt.get.multi "/v5/repos/$owner_repo/pulls/comments" sort direction since | json.extract \* "body"
+    owner_repo="$(gt_param_normalize_repo "$repo")" || return 1
+    gt_get_multi "/v5/repos/$owner_repo/pulls/comments" sort direction since | json.extract \* "body"
 }
 
 
 ############################
 # Section 10: OO Style
 ############################
-gt.new(){
+gt_new(){
     oo.create_new_function gt "$@"
 }
 
-gt.repo.new(){
+gt_repo_new(){
     local owner repo="${1:?Provide enterprise name}"
-    gt.parse_owner_repo
+    gt_parse_owner_repo
     local instance_name="${2:-$repo}"
 
     eval "
-        $instance_name.member.list(){ gt.repo.member.list \"\$@\"; }
-        $instance_name.member.add(){ gt.repo.member.add \"\$@\"; }
-        $instance_name.member.remove(){ gt.repo.member.remove \"\$@\"; }
+        ${instance_name}_member_list(){ gt_repo_member_list \"\$@\"; }
+        ${instance_name}_member_add(){ gt_repo_member_add \"\$@\"; }
+        ${instance_name}_member_remove(){ gt_repo_member_remove \"\$@\"; }
     "
 }
 
-gt.org.new(){
+gt_org_new(){
     local owner="${1:?Provide organization name}"
     local instance_name="${2:-$owner}"
     eval "
-        $instance_name.info(){ gt.org.info $owner; }
-        $instance_name.repo.create(){ gt.org.repo.create --owner $owner \"\$@\"; }
-        $instance_name.repo.list(){ gt.org.repo.list --owner $owner \"\$@\"; }
+        ${instance_name}_info(){ gt_org_info $owner; }
+        ${instance_name}_repo_create(){ gt_org_repo_create --owner $owner \"\$@\"; }
+        ${instance_name}_repo_list(){ gt_org_repo_list --owner $owner \"\$@\"; }
     "
 }
 
-gt.enterprise.new(){
+gt_enterprise_new(){
     local owner="${1:?Provide enterprise name}"
     local instance_name="${2:-$owner}"
     eval "
-        $instance_name.info(){ gt.enterprise.info $owner; }
-        $instance_name.repo.create(){ gt.enterprise.repo.create --owner $owner \"\$@\"; }
-        $instance_name.repo.list(){ gt.enterprise.repo.list  --owner $owner \"\$@\"; }
+        ${instance_name}_info(){ gt_enterprise_info $owner; }
+        ${instance_name}_repo_create(){ gt_enterprise_repo_create --owner $owner \"\$@\"; }
+        ${instance_name}_repo_list(){ gt_enterprise_repo_list  --owner $owner \"\$@\"; }
     "
 }
 
 ############################
 # Section 11: Instantiation
 ############################
-gt.make(){
+gt_make(){
     local O_ORIGINAL=${1:?Provide client name by O environment}
 
     # if [ -n "$GITEE_DEFAULT" ] && [ "$O_ORIGINAL" = "GITEE_DEFAULT" ]; then
@@ -1146,21 +1150,21 @@ gt.make(){
 
     local O="_x_cmd_x_bash_gitee_$O_ORIGINAL"
 
-    http.make "$O" 'https://gitee.com/api'
-    http.header.content-type.eq.json+utf8
+    http_make "$O" 'https://gitee.com/api'
+    http_header.content-type.eq.json+utf8
 
-    O="$O_ORIGINAL" gt.config.load
-    O="$O_ORIGINAL" gt.current_owner >/dev/null
+    O="$O_ORIGINAL" gt_config_load
+    O="$O_ORIGINAL" gt_current_owner >/dev/null
 
     # local TOKEN=${2:-""}
     # if [ -n "$GITEE_TOKEN" ]; then
     #     printf "Init token with env GITEE_TOKEN\n" >&2
-    #     O=$O_ORIGINAL gt.token.set "$GITEE_TOKEN"
-    # else    #     gt.config.load default
+    #     O=$O_ORIGINAL gt_token.set "$GITEE_TOKEN"
+    # else    #     gt_config_load default
     # fi
 }
 
 
 if [ -z "$DO_NOT_INIT_GITEE_DEFAULT" ]; then
-    gt.make "GITEE_DEFAULT"
+    gt_make "GITEE_DEFAULT"
 fi
