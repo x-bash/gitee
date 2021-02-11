@@ -25,8 +25,8 @@ gt_token(){
         # setter
         local token="$1"
         O="_x_cmd_x_bash_gitee_${O:-GITEE_DEFAULT}"
-        http_qs.put access_token "$token"
-        http_body.put access_token "$token"
+        http_qs_put access_token "$token"
+        http_body_put access_token "$token"
     fi
 }
 
