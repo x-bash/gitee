@@ -731,7 +731,7 @@ A
     owner_repo="$(gt_param_normalize_repo "$repo")"
     if [ -z "$(gt_repo_releaseid --repo "$owner_repo" --tag "$tag_name")" ]; then
     gt_repo_release_create --repo "$repo" --tag_name "$tag_name" --name "name" \
-     --body "$body" --prerelease $prerelease --target_commitish "$target_commitish"
+     --body "$body" --prerelease "$prerelease" --target_commitish "$target_commitish"
      else
      echo "Already exists $tag_name"
     return 0
