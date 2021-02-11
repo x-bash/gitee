@@ -310,10 +310,10 @@ A
 
 # https://gitee.com/api/v5/swagger#/getV5OrgsOrgRepos
 gt_org_repo_list(){
-    param '
+    param <<A
         #1 "Provide organization"
         --type=all          "repo type"     = all public privates
-    '
+A
 
     local owner="$0"
     gt_get_multi "/v5/orgs/$owner/repos" type=all | json_extract \* "full_name"
