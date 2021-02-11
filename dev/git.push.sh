@@ -1,9 +1,14 @@
-git remote remove gitee 2>/dev/null
-git remote add gitee git@gitee.com:x-bash/gitee.git
-git push gitee
+#! /usr/bin/env bash
 
-git remote remove github 2>/dev/null
-git remote add github git@github.com:x-bash/gitee.git
-git push github
+dev.gt.push() {
 
-git push origin
+    git remote remove gitee 2>/dev/null
+    git remote add gitee git@gitee.com:x-bash/gitee.git
+    git push gitee
+
+    git remote remove github 2>/dev/null
+    git remote add github git@github.com:x-bash/gitee.git
+    git push github
+
+    git push origin
+}
