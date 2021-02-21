@@ -1,7 +1,6 @@
 #! /usr/bin/env bash
 
 dev.gt.push() {
-
     git remote remove gitee 2>/dev/null
     git remote add gitee git@gitee.com:x-bash/gitee.git
     git push gitee
@@ -9,6 +8,4 @@ dev.gt.push() {
     git remote remove github 2>/dev/null
     git remote add github git@github.com:x-bash/gitee.git
     git push github
-
-    git push origin
 }
