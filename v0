@@ -1,7 +1,7 @@
 # shellcheck shell=sh
 # shellcheck disable=SC2039
 
-xrc std/http std/param std/json
+xrc http/v0 param/v0 json/v0
 
 ############################
 # Section 1: Instantiation & Utilities
