@@ -1,7 +1,7 @@
 . gitee
 gt.new a
 # Section 1: Token & Config management
-access_token=2e9de6e435d22da444f67b8a5e5e15d5
+access_token=c32352471710e3306fd215919d15e034
 echo "init : "$(a.token) 
 a.token $access_token
 a.config.save
