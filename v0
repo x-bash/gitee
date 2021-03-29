@@ -106,7 +106,8 @@ gt_config_which() {
 gt_config_save() {
     local O="${O:-GITEE_DEFAULT}"
     local path="${1:-$HOME/.x-cmd.com/config/x-bash/app.gitee.config/$O}"
-    "$(param_default get "gitee_$O" "token")">>"$path"
+    mkdir -p "$(dirname "$path")"
+    param_default dump "gitee_$O" > "$path"
     echo "Config $O saved in path: $path" >&2
 }
 
@@ -1114,7 +1115,7 @@ gt_make() {
 
     local O="_x_cmd_x_bash_gitee_$O_ORIGINAL"
     http_make "$O" 'https://gitee.com/api'
-    O="$O_ORIGINAL" http_header_content_type "application/json;charset=utf-8"
+    O="$O_ORIGINAL" http_header content_type "application/json;charset=utf-8"
     # O="$O_ORIGINAL" gt_config_load
     O="$O_ORIGINAL" gt_current_owner >/dev/null
     # local TOKEN=${2:-""}
