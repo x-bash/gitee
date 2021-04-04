@@ -59,7 +59,7 @@ a.repo.url "mycw/cloudTemplat"
 # TODO results agreement
 a.repo.url "mycw/cloudTemplat" "strong_task/fx"
 echo "clone repo"
-a.repo.clone "mycw/git-recipes"
+a.repo.clone "mycw/x-bash-test"
 
 # Section 7: Repo - Deletion & Info & Creation
 echo "get repo info"
@@ -94,8 +94,6 @@ a.repo.release.create --repo "mycw/x-bash-test" --tag_name "v1.0" --name "tzw-te
 a.repo.release.update --repo "mycw/x-bash-test" --tag_name "v1.1" --name "tzw-test" --body "test" --prerelease false --target_commitish "master" --id 11
 # id is variable
 a.repo.release.delete --repo "mycw/x-bash-test" --id 107822
-<<<<<<< HEAD
-=======
 a.repo.release --repo "bash-gitee/x-bash-test" --tag "v1.0"
 a.repo.release.get_or_create --repo "bash-gitee/x-bash-test"  --tag_name "v1.5"  --name "tzw-test" --body "test" --prerelease false --target_commitish "master"
 a.repo.release.latest_update --repo "bash-gitee/x-bash-test"
@@ -116,4 +114,4 @@ a.repo.pr.test-status.reset --repo "bash-gitee/x-bash-test" --number 1
 a.repo.pr.issue.list --repo "bash-gitee/x-bash-test" --number 1
 a.repo.pr.comment.list --repo "bash-gitee/x-bash-test"
 
->>>>>>> c6a8f469687748f3af2cc9dbe96bedcc3edde1f9
+z
