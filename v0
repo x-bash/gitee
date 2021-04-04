@@ -515,8 +515,8 @@ A
         ;;
     fork)
         param <<A
-        --repo              "Repo name"
-        --organization=""   "Provide organization"
+        --repo              "Repo name"              =~    [一-龥_a-zA-Z0-9]+
+        --organization=""   "Provide organization"   =~    [一-龥_a-zA-Z0-9]+
 A
 
         local owner_repo
@@ -645,9 +645,9 @@ A
             "gt_repo_member_add --repo=x-bash/work pull:user1,user2 push:user3s"
 
         param <<A
-        --repo="" "Repo name"
+        --repo="" "Repo name"               =~    [一-龥_a-zA-Z0-9]+
         --permission=pull "Repo permission" = push push admin
-        ... "User list"
+        ... "User list"                     =~    [一-龥_a-zA-Z0-9]+
 A
 
         repo="$(gt_param_normalize_repo "$repo")" || return 1
@@ -684,7 +684,7 @@ gt_repo_page() {
     local op="$1"
     shift
     param <<A
-        #1      "Provide repo"
+        #1      "Provide repo"      =~    [一-龥_a-zA-Z0-9]+
 A
     local owner_repo
     owner_repo="$(gt_param_normalize_repo "$1")"
@@ -715,7 +715,7 @@ gt_repo_release() {
     list)
         shift
         param <<A
-        #1      "Provide repo"
+        #1      "Provide repo"         =~    [a-zA-Z0-9]+
 A
 
         local owner_repo
@@ -726,12 +726,12 @@ A
         shift
         param <<A
         default gitee_$O
-        --repo    "Provide repo"
-        --tag_name "Please provide tag name"
-        --name    "Release name"
-        --body    "Release Description"
-        --prerelease  "Is release version"
-        --target_commitish="master"  "Default is master"
+        --repo    "Provide repo"                        =~    [a-zA-Z0-9]+
+        --tag_name "Please provide tag name"            =~    [一-龥_a-zA-Z0-9]+
+        --name    "Release name"                        =~    [一-龥_a-zA-Z0-9]+
+        --body    "Release Description"                 =~    [一-龥_a-zA-Z0-9]+
+        --prerelease  "Is release version"              =~    [一-龥_a-zA-Z0-9]+
+        --target_commitish="master"  "Default is master"    =~    [一-龥_a-zA-Z0-9]+
 A
 
         gt_request post json "/v5/repos/$owner_repo/releases" \
@@ -740,14 +740,12 @@ A
     update)
         shift
         param <<A
-        default gitee_$O
-        --repo "Provide repo"
-        --id  "Release ID"
-        --tag_name "Please provide tag name"
-        --name    "Release name"
-        --body    "Release Description"
-        --prerelease  "Is release version"
-        --target_commitish="master"  "Default is master"
+        default gitee_$O=~    [一-龥_a-zA-Z0-9]+
+        --tag_name "Please provide tag name"        =~    [一-龥_a-zA-Z0-9]+
+        --name    "Release name"                    =~    [一-龥_a-zA-Z0-9]+
+        --body    "Release Description"             =~    [一-龥_a-zA-Z0-9]+
+        --prerelease  "Is release version"          =~    [一-龥_a-zA-Z0-9]+
+        --target_commitish="master"  "Default is master"        =~    [一-龥_a-zA-Z0-9]+
 A
 
         gt_request post json "/v5/repos/$owner_repo/releases/${id}" \
@@ -765,12 +763,12 @@ A
         shift
         param <<A
         default gitee_$O
-        --repo "Provide repo"
-        --tag_name "Please provide tag name"
-        --name    "Release name"
-        --body    "Release Description"
-        --prerelease=false  "Is release version" = true false
-        --target_commitish="master"  "Default is master"
+        --repo "Provide repo"                       =~    [a-zA-Z0-9]+
+        --tag_name "Please provide tag name"        =~    [一-龥_a-zA-Z0-9]+
+        --name    "Release name"                    =~    [一-龥_a-zA-Z0-9]+
+        --body    "Release Description"             =~    [一-龥_a-zA-Z0-9]+
+        --prerelease=false  "Is release version" = true false   =~    [一-龥_a-zA-Z0-9]+
+        --target_commitish="master"  "Default is master"        =~    [一-龥_a-zA-Z0-9]+
 A
         if [ -z "$(gt_repo_releaseid --repo "$owner_repo" --tag "$tag_name")" ]; then
             gt_repo_release_create --repo "$repo" --tag_name "$tag_name" --name "name" \
@@ -784,16 +782,16 @@ A
         shift
         param <<A
         default gitee_$O
-        --repo "Provide repo"
-        --id  "Release ID"
+        --repo "Provide repo"       =~    [a-zA-Z0-9]+
+        --id  "Release ID"          =~    [a-zA-Z0-9]+
 A
         gt_request delete "/v5/repos/$owner_repo/releases/$id"
         ;;
     *)
         param <<A
         --default gitee_$O
-        --repo "Provide repo"
-        --tag "Please provide tag"
+        --repo "Provide repo"           =~    [a-zA-Z0-9]+
+        --tag "Please provide tag"      =~    [a-zA-Z0-9]+
         --choice=id "What you need id or name" = id name assets
 A
 
@@ -810,7 +808,7 @@ gt_repo_release_attachment() {
         shift
         param <<A
         default gitee_$O
-        --repo    "Repo name"
+        --repo    "Repo name"       =~    [a-zA-Z0-9]+
 A
 
         local owner_repo
@@ -822,7 +820,7 @@ A
 
         param <<A
         default gitee_$O
-        --repo    "Repo name"
+        --repo    "Repo name"       =~    [a-zA-Z0-9]+
 A
 
         local owner_repo
@@ -834,7 +832,7 @@ A
 
         param <<A
         default gitee_$O
-        --repo="" "Repo name"
+        --repo="" "Repo name"       =~    [a-zA-Z0-9]+
 A
 
         local owner_repo
@@ -843,8 +841,8 @@ A
     *)
         param <<A
         default gitee_$O
-        --owner="" "Repo Owner"
-        --repo="" "Repo name"
+        --owner="" "Repo Owner"     =~    [一-龥_a-zA-Z0-9]+
+        --repo="" "Repo name"       =~    [a-zA-Z0-9]+
 A
         gt_parse_owner_repo
         ;;
@@ -866,17 +864,17 @@ gt_repo_pr() {
     create)
         param <<A
         default gitee_$O
-        --repo    "Repo name"
-        --title   "pr title"
-        --head    "source branch. Format: [username:]<branch>"
-        --base    "target branch. Format: [username:]<branch>"
-        --body="" "pull request content"
-        --milestone_number="" "milestone id"
-        --labels="" "labels"
-        --issue="" "issue id"
-        --assignees="" "reviewer username list. Format: <username>[,<username>]"
-        --testers="" "tester username list. Format: <username>[,<username>]"
-        --prune_source_branch=false = true false
+        --repo    "Repo name"       =~    [a-zA-Z0-9]+
+        --title   "pr title"        =~    [a-zA-Z0-9]+
+        --head    "source branch. Format: [username:]<branch>"      =~    [一-龥_a-zA-Z0-9]+
+        --base    "target branch. Format: [username:]<branch>"      =~    [一-龥_a-zA-Z0-9]+
+        --body="" "pull request content"      =~    [一-龥_a-zA-Z0-9]+
+        --milestone_number="" "milestone id"      =~    [a-zA-Z0-9]+
+        --labels="" "labels"      =~    [a-zA-Z0-9]+
+        --issue="" "issue id"      =~    [a-zA-Z0-9]+
+        --assignees="" "reviewer username list. Format: <username>[,<username>]"      =~    [一-龥_a-zA-Z0-9]+
+        --testers="" "tester username list. Format: <username>[,<username>]"      =~    [一-龥_a-zA-Z0-9]+
+        --prune_source_branch=false = true false      =~    [一-龥_a-zA-Z0-9]+
 A
 
         gt_request post json "/v5/repos/$owner_repo/pulls" \
@@ -886,15 +884,15 @@ A
     list)
         param <<A
         default gitee_$O
-        --repo    "Repo name"
-        --state=open = open closed merged all
-        --head=""    "source branch. Format: [username:]<branch>"
-        --base=""    "target branch. Format: [username:]<branch>"
-        --sort=created = created updated popularity long-running
-        --direction=desc = desc asc
-        --milestone_number="" "milestone id"
-        --labels="" "labels"
-        --parameter="html_url" "screen parameter"
+        --repo    "Repo name"      =~    [a-zA-Z0-9]+
+        --state=open "" = open closed merged all
+        --head=""    "source branch. Format: [username:]<branch>"      =~    [一-龥_a-zA-Z0-9]+
+        --base=""    "target branch. Format: [username:]<branch>"      =~    [一-龥_a-zA-Z0-9]+
+        --sort=created = created updated popularity long-running      =~    [一-龥_a-zA-Z0-9]+
+        --direction=desc    ""   = desc asc
+        --milestone_number="" "milestone id"          =~    [a-zA-Z0-9]+
+        --labels="" "labels"      =~    [a-zA-Z0-9]+
+        --parameter="html_url" "screen parameter"      =~    [一-龥_a-zA-Z0-9]+
 A
 
         gt_request get multi "/v5/repos/${owner_repo}/pulls" state head base \
@@ -903,14 +901,14 @@ A
     open)
         param <<A
         default gitee_$O
-        --repo="" "Repo name"
+        --repo="" "Repo name"      =~    [a-zA-Z0-9]+
 A
         ;;
     status)
         param <<A
         default gitee_$O
-        --repo="" "Repo name"
-        --parameter="state"
+        --repo="" "Repo name"      =~    [a-zA-Z0-9]+
+        --parameter="state" ""      =~    [a-zA-Z0-9]+
 A
         local state url
         url="$(gt_repo_pr list --repo $repo --parameter "html_url")"
@@ -962,18 +960,18 @@ gt_repo_pr_testers() {
         shift
         param <<A
         default gitee_$O
-        --repo "Repo name"
-        --number "pull request id"
-        --testers "testers username list. Format: <username>[,<username>]"
+        --repo "Repo name"      =~    [a-zA-Z0-9]+
+        --number "pull request id"      =~    [a-zA-Z0-9]+
+        --testers "testers username list. Format: <username>[,<username>]"      =~    [a-zA-Z0-9]+
 A
         gt_request delete "/v5/repos/${owner_repo}/pulls/${number}/testers?testers=$testers"
         ;;
     *)
         param <<A
         default gitee_$O
-        --repo "Repo name"
-        --number "pull request id"
-        --testers="" "testers username list. Format: <username>[,<username>]"
+        --repo "Repo name"      =~    [a-zA-Z0-9]+
+        --number "pull request id"      =~    [a-zA-Z0-9]+
+        --testers="" "testers username list. Format: <username>[,<username>]"      =~    [a-zA-Z0-9]+
 A
         gt_request post json "/v5/repos/${repo}/pulls/${number}/testers" labels testers
         ;;
@@ -986,9 +984,9 @@ gt_repo_pr_review_status_reset() {
 
     param <<A
         default gitee_$O
-        --repo    "Repo name"
-        --number  "pull request id"
-        --reset_all=true "Reset" = true false
+        --repo    "Repo name"                       =~    [a-zA-Z0-9]+
+        --number  "pull request id"                 =~    [a-zA-Z0-9]+
+        --reset_all=true "Reset" = true false       =~    [a-zA-Z0-9]+
 A
 
     local owner_repo
@@ -1003,9 +1001,9 @@ gt_repo_pr_test_status_reset() {
 
     param <<A
         default gitee_$O
-        --repo    "Repo name"
-        --number  "pull request id"
-        --reset_all=true "Reset" = true false
+        --repo    "Repo name"                       =~    [a-zA-Z0-9]+
+        --number  "pull request id"                 =~    [a-zA-Z0-9]+
+        --reset_all=true "Reset" = true false       =~    [a-zA-Z0-9]+
 A
 
     local owner_repo
@@ -1020,8 +1018,8 @@ gt_repo_pr_view() {
 
     param <<A
         default gitee_$O
-        --repo    "Repo name"
-        --id  "pull request id"
+        --repo    "Repo name"        =~    [a-zA-Z0-9]+
+        --id  "pull request id"      =~    [a-zA-Z0-9]+
 A
 
     local owner_repo
@@ -1033,7 +1031,7 @@ A
 gt_repo_pr_checkout_http() {
     param <<A
         default gitee_$O
-        --repo    "Repo name"
+        --repo    "Repo name"      =~    [a-zA-Z0-9]+
 A
 
     local owner_repo
@@ -1064,8 +1062,8 @@ gt_repo_pr_merge_http() {
 gt_repo_pr_issue_list() {
     param <<A
         default gitee_$O
-        --repo      "Repo name"
-        --number    "pr number"
+        --repo      "Repo name"      =~    [a-zA-Z0-9]+
+        --number    "pr number"      =~    [a-zA-Z0-9]+
 A
 
     local owner_repo
@@ -1080,10 +1078,10 @@ gt_repo_pr_comment_list() {
 
     param <<A
         default gitee_$O
-        --repo          "Repo name"
+        --repo          "Repo name"      =~    [a-zA-Z0-9]+
         --sort=created              = created update
         --direction=desc            = desc asc
-        --since=""      "start time ISO 8601"
+        --since=""      "start time ISO 8601"      =~    [a-zA-Z0-9]+
 A
 
     local owner_repo
