@@ -38,6 +38,7 @@ gt_token() {
 gt_current() {
     local O="${O:-GITEE_DEFAULT}"
     local op="$1"
+    shift
     case "$op" in
     repo)
         param_default get "gitee_$O" "repo" "$@"
