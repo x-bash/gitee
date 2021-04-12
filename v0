@@ -240,7 +240,7 @@ gt_param_normalize_repo() {
 gt_parse_owner_repo() {
     local O="${O:-GITEE_DEFAULT}"
     if [ -z "$repo" ]; then
-        repo="$(gt_current_repo)"
+        repo="$(gt_current repo)"
     fi
     # if [[ "$repo" = */* ]]; then
     if str_regex "$repo" "/"; then
@@ -329,7 +329,7 @@ A
 A
 
             # gt_get_multi "/v5/enterprises/$owner/repos" type=all | jq -r ".[] | .full_name"
-            gt_request get multi "/v5/enterprises/$owner/repos" type=all | json_query .[0].full_name
+            gt_request get multi "/v5/enterprises/$owner/repos" type="$type" | json_query .[0].full_name
             ;;
         *)
             echo "What do you need to do create|list"
@@ -357,7 +357,7 @@ A
 gt_org() {
     local op="$1"
     shift
-    case $1 in
+    case $op in
     info)
         gt_request get "/v5/orgs/${1:?Provide organization}"
         ;;
@@ -374,11 +374,11 @@ A
         case $1 in
         list)
             param <<A
-        #1 "Provide organization"        =~    [一-龥_a-zA-Z0-9]+
+        #1 "Provide organization"        =~    [-一-龥_a-zA-Z0-9]+
         --type=all          "repo type"     = all public privates
 A
             local owner="$0"
-            gt_request get multi "/v5/orgs/$owner/repos" type=all | json_query .full_name
+            gt_request get multi "/v5/orgs/$owner/repos" type="$type" | json_query .full_name
             ;;
 
         create)
@@ -488,6 +488,7 @@ A
         --has_issues=true  "Provide issue"      = true false
         --has_wiki=true    "Provide wiki"       = true false
         --access=private   "Provide access"     = public private innerSource
+        ...                     "repo list to create"  =~    [一-龥_a-zA-Z0-9]+
 A
 
         local private
@@ -551,12 +552,11 @@ A
 gt_user_repo_list() {
     param <<A
         --visibility=all    ""      = public private all
-        --affiliation=owner ""      =, owner collaborator organization_member enterprise_member admin
+        --affiliation=owner ""      = owner collaborator organization_member enterprise_member admin
         --sort=created      ""      = created updated pushed full_name
-        --direction="desc"  ""      = asc desc
+        --direction=desc  ""      = asc desc
 A
-
-    gt_request get multi "/v5/user/repos" visibility affiliation sort direction | json_query .full_name
+    gt_request get multi "/v5/user/repos" visibility= affiliation sort direction
 }
 
 ############################
