@@ -278,6 +278,44 @@ gt_user() {
 A
         gt_request get "/v5/users/$name" | json_query .html_url
         ;;
+    keys)
+        case "$1" in
+        create)
+            shift
+            param <<A
+        default gitee_$O
+        #1  "users email" =~    \w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*
+A
+            ssh-keygen -t rsa -C "$1"
+            ;;
+
+        add)
+            param <<A
+        default gitee_$O
+        --key=1  "Provide ssh-key" =~    [a-zA-Z0-9]+
+        --title=20 "Provide ssh-key title" =~  [-一-龥_a-zA-Z0-9]+
+A
+            gt_request post json "/v5/user/keys" key title
+            ;;
+
+        delete)
+            param <<A
+        default gitee_$O
+        --id  "Provide ssh-key id" =~    [a-zA-Z0-9]+
+A
+            gt_request delete "/v5/user/keys/$id"
+            ;;
+
+        list | *)
+            param <<A
+        default gitee_$O
+        --page=1  "" =~    [0-9]*
+        --per_page=20 "" =~ [0-9]*
+A
+            gt_request get "/v5/user/keys"
+            ;;
+        esac
+        ;;
     *)
         gt_request get "/v5/user"
         ;;
