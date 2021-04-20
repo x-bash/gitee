@@ -24,7 +24,6 @@ gt_token() {
     else
         param_default put "gitee_$O" "token" "$@"
     fi
-
     if [ -n "$1" ]; then
         # setter
         local token="$1"
@@ -114,10 +113,14 @@ gt_config() {
         echo "Config $O saved in path: $path" >&2
         ;;
     load)
+    if [ -s "$path" ]; then
         param_default load "gitee_$O" "$path"
         echo "Config $O load from path: $path" >&2
         token="$(param_default get "gitee_$O" token)"
-        gt_token "$token"
+        if [ -n "$token" ] ; then
+            gt_token "$token"
+        fi
+    fi
         ;;
     *)
         echo "Provide config operation type which|save|load"
