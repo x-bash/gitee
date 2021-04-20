@@ -84,6 +84,10 @@ gt_current() {
                 return 0
             fi
 
+            if [ -z "$(gt_token)" ]; then
+                echo "token:$(gt_token)"
+                return 0
+            fi
             # data="$(gt_user_info | jq -r .login)"
             data="$(gt_user info | json_query .login)"
             [ -z "$data" ] && return 1
