@@ -1,5 +1,5 @@
 # shellcheck shell=sh
-# shellcheck disable=SC2039
+# shellcheck disable=SC2039,3043
 
 xrc http/v0 param/v0 json/v0 str/v0
 
@@ -432,10 +432,11 @@ gt_repo_create() {
     local O="${O:-GITEE_DEFAULT}"
 
     param <<A
-        default gitee_$O
-        --has_issues=true  "Provide issue"      = true false
-        --has_wiki=true    "Provide wiki"       = true false
-        --access=private   "Provide access"     = public private innerSource
+scope:  gitee/$O
+option:
+    --has_issues    "Provide issue"       <true|false>=true   =     true false
+    --has_wiki      "Provide wiki"        <true|false>=true   =     true false
+    --access        "Provide access"      <access>=private    =     public private innerSource
 A
 
     local private
@@ -471,18 +472,19 @@ gt_org_repo_create() {
     # TODO: I don't know what does path means for an organization repo
     # path is null default repo name as path
     param <<A
-        default gitee_$O
-        --path=""               "provide path"
-        --description=""        "repo description"
-        --homepage=""           "repo home page"
-        --has_issues=true       ""                  = true false
-        --has_wiki=true         ""                  = true false
-        --can_comment=true      ""                  = true false
-        --access=private        ""                  = public private innerSource
-        --auto_init=false       ""                  = true false
-        --gitignore_template="" ""
-        --license_template=""   ""
-        ...                     "repo list to create"
+scope:  gitee/$O
+option:
+    --path                  "provide path"      <>=""
+    --description           "repo description"  <>=""
+    --homepage              "repo home page"    <>=""
+    --has_issues            ""                  <true|false>=true   =     true false
+    --has_wiki=true         ""                  <true|false>=true   =     true false
+    --can_comment           ""                  <true|false>=true   =     true false
+    --access                ""                  <access>=private public private innerSource
+    --auto_init             ""                  <true|false>=false  =     true false
+    --gitignore_template    ""
+    --license_template      ""
+    ...                     "repo list to create"
 A
 
     local public
@@ -527,9 +529,9 @@ A
     local private
     # shellcheck disable=SC2034
     case "$access" in
-    public) private=0 ;;
-    private) private=1 ;;
-    innerSource) private=2 ;;
+        public)         private=0 ;;
+        private)        private=1 ;;
+        innerSource)    private=2 ;;
     esac
 
     # TODO
@@ -565,13 +567,13 @@ A
 
 # https://gitee.com/api/v5/swagger#/putV5ReposOwnerRepoCollaboratorsUsername
 gt_repo_member_add() {
-    param_example \
-        "Add user with pull permission" \
-        "gt_repo_member_add --repo=x-bash/work --permission pull user1 user2"
-    "Add user with push permission" \
-        "gt_repo_member_add --repo=x-bash/work --permission push user3" \
-        "Add user with push permission" \
-        "gt_repo_member_add --repo=x-bash/work pull:user1,user2 push:user3s"
+    # param_example \
+    #     "Add user with pull permission" \
+    #     "gt_repo_member_add --repo=x-bash/work --permission pull user1 user2"
+    # "Add user with push permission" \
+    #     "gt_repo_member_add --repo=x-bash/work --permission push user3" \
+    #     "Add user with push permission" \
+    #     "gt_repo_member_add --repo=x-bash/work pull:user1,user2 push:user3s"
 
     param <<A
         --repo="" "Repo name"
