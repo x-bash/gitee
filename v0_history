@@ -1,0 +1,38 @@
+############################
+# Section 10: OO Style
+############################
+gt_new() {
+    oo.create_new_function gt "$@"
+}
+
+gt_repo_new() {
+    local owner repo="${1:?Provide enterprise name}"
+    gt_parse_owner_repo
+    local instance_name="${2:-$repo}"
+
+    eval "
+        ${instance_name}_member_list(){ gt_repo_member_list \"\$@\"; }
+        ${instance_name}_member_add(){ gt_repo_member_add \"\$@\"; }
+        ${instance_name}_member_remove(){ gt_repo_member_remove \"\$@\"; }
+    "
+}
+
+gt_org_new() {
+    local owner="${1:?Provide organization name}"
+    local instance_name="${2:-$owner}"
+    eval "
+        ${instance_name}_info(){ gt_org_info $owner; }
+        ${instance_name}_repo_create(){ gt_org_repo_create --owner $owner \"\$@\"; }
+        ${instance_name}_repo_list(){ gt_org_repo_list --owner $owner \"\$@\"; }
+    "
+}
+
+gt_enterprise_new() {
+    local owner="${1:?Provide enterprise name}"
+    local instance_name="${2:-$owner}"
+    eval "
+        ${instance_name}_info(){ gt_enterprise_info $owner; }
+        ${instance_name}_repo_create(){ gt_enterprise_repo_create --owner $owner \"\$@\"; }
+        ${instance_name}_repo_list(){ gt_enterprise_repo_list  --owner $owner \"\$@\"; }
+    "
+}
